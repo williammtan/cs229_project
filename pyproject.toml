@@ -1,0 +1,17 @@
+[project]
+name = "etm"
+version = "0.1.0"
+description = "CS229: cross-subject calibration efficiency for continuous EEG hand-kinematic decoding"
+requires-python = ">=3.12"
+dependencies = [
+    "h5py>=3.16.0",
+    "matplotlib>=3.10.9",
+    "mne>=1.12.1",
+    "numpy>=2.4.4",
+    "pandas>=3.0.3",
+    "requests>=2.34.0",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.17.1",
+    "torch>=2.11.0",
+    "tqdm>=4.67.3",
+]
