@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - override /backbone: labram_finetune
+  - override /protocol: loso

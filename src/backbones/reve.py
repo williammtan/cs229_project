@@ -32,6 +32,7 @@ def _build_chs_info(ch_names: list[str]) -> list[dict]:
 
 
 @register("backbone", "reve_frozen")
+@register("backbone", "reve_finetune")
 class REVEBackbone(FMBackboneBase):
     """REVE with mean-pooled per-window features."""
 
@@ -46,6 +47,7 @@ class REVEBackbone(FMBackboneBase):
         freeze: bool = True,
         batch_size: int = 16,  # 69M params; smaller batch
         pretrained_id: str | None = "braindecode/REVE-Pretrained",
+        finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id
         super().__init__(
@@ -55,6 +57,7 @@ class REVEBackbone(FMBackboneBase):
             hop_seconds=hop_seconds,
             freeze=freeze,
             batch_size=batch_size,
+            finetune_train=finetune_train,
         )
 
     def _build_model(self) -> nn.Module:

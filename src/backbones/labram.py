@@ -20,6 +20,7 @@ from src.core.registry import register
 
 
 @register("backbone", "labram_frozen")
+@register("backbone", "labram_finetune")
 class LabramBackbone(FMBackboneBase):
     """LaBraM with mean-pooled per-window features."""
 
@@ -35,6 +36,7 @@ class LabramBackbone(FMBackboneBase):
         batch_size: int = 32,
         pretrained_id: str | None = "braindecode/Labram-Braindecode",
         use_cls_token: bool = True,
+        finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id
         self.use_cls_token = use_cls_token
@@ -45,6 +47,7 @@ class LabramBackbone(FMBackboneBase):
             hop_seconds=hop_seconds,
             freeze=freeze,
             batch_size=batch_size,
+            finetune_train=finetune_train,
         )
 
     def _build_model(self) -> nn.Module:
@@ -86,3 +89,6 @@ class LabramBackbone(FMBackboneBase):
         if self.use_cls_token and out.get("cls_token") is not None:
             return out["cls_token"]
         return out["features"].mean(dim=1)
+
+    def _forward_predict(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x, ch_names=list(self.channel_names))

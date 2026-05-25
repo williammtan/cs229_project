@@ -18,6 +18,7 @@ from src.core.registry import register
 
 
 @register("backbone", "cbramod_frozen")
+@register("backbone", "cbramod_finetune")
 class CBraModBackbone(FMBackboneBase):
     """CBraMod with mean-pooled per-window features."""
 
@@ -32,6 +33,7 @@ class CBraModBackbone(FMBackboneBase):
         freeze: bool = True,
         batch_size: int = 32,
         pretrained_id: str | None = "braindecode/CBraMod-Pretrained",
+        finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id
         super().__init__(
@@ -41,6 +43,7 @@ class CBraModBackbone(FMBackboneBase):
             hop_seconds=hop_seconds,
             freeze=freeze,
             batch_size=batch_size,
+            finetune_train=finetune_train,
         )
 
     def _build_model(self) -> nn.Module:

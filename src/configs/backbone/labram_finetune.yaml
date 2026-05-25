@@ -1,0 +1,19 @@
+# @package backbone
+name: labram_finetune
+n_channels: 32
+win_seconds: 2.0
+hop_seconds: 0.2
+freeze: false
+batch_size: 16
+pretrained_id: braindecode/Labram-Braindecode
+use_cls_token: true
+finetune_train:
+  lr: 5.0e-5
+  weight_decay: 1.0e-4
+  epochs: 8
+  patience: 2
+  batch_size: 16
+  val_frac: 0.1
+  seed: 0
+  grad_clip: 1.0
+  max_train_windows: 4000

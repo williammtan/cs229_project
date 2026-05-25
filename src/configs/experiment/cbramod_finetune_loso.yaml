@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - override /backbone: cbramod_finetune
+  - override /protocol: loso
+# head=null -> monolithic path -> backbone.predict_trial (uses its trained head)

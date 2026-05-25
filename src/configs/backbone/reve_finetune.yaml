@@ -1,0 +1,18 @@
+# @package backbone
+name: reve_finetune
+n_channels: 32
+win_seconds: 2.0
+hop_seconds: 0.2
+freeze: false
+batch_size: 8     # 69M params -- small batch
+pretrained_id: braindecode/REVE-Pretrained
+finetune_train:
+  lr: 3.0e-5
+  weight_decay: 1.0e-4
+  epochs: 5         # 69M params on CPU -- keep epoch budget modest
+  patience: 2
+  batch_size: 8
+  val_frac: 0.1
+  seed: 0
+  grad_clip: 1.0
+  max_train_windows: 2000
