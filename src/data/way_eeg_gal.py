@@ -187,3 +187,17 @@ def concat_trials(trials: list[Trial]) -> tuple[np.ndarray, np.ndarray, np.ndarr
 
 def trial_lengths(trials: list[Trial]) -> np.ndarray:
     return np.array([t.eeg.shape[-1] for t in trials])
+
+
+def load_dataset(
+    raw_dir: Path | str,
+    subjects: Iterable[int],
+    series: Iterable[int] | None = None,
+    src_fs: int = EEG_FS,
+    dst_fs: int = TARGET_FS,
+) -> dict[int, SubjectData]:
+    """Convenience: load multiple subjects into ``{subject_id: SubjectData}``."""
+    out: dict[int, SubjectData] = {}
+    for s in subjects:
+        out[s] = load_subject(raw_dir, subject=s, series=series, src_fs=src_fs, dst_fs=dst_fs)
+    return out

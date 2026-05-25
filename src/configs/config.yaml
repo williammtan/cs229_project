@@ -1,0 +1,20 @@
+# Root Hydra config. Compose with experiment presets, e.g.:
+#   uv run python -m src.runner +experiment=baseline_eegnet_loso
+#
+# Top-level fields that aren't config groups (because they're list-valued or
+# nullable) live here directly:
+#   adapters: list of adapter dicts ({name, ...}). Empty list = no adapters.
+#   head:     optional head dict. null = monolithic backbone path.
+#   seed:     int.
+
+defaults:
+  - dataset: way_eeg_gal
+  - backbone: eegnet
+  - protocol: loso
+  - logger: offline
+  - _self_
+
+seed: 0
+adapters: []
+head: null
+raw_dir: data/raw

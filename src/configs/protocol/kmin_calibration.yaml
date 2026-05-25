@@ -1,0 +1,4 @@
+# @package protocol
+name: kmin_calibration
+k_budgets_min: [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]
+seed: 0

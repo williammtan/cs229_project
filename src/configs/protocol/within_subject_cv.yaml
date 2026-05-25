@@ -1,0 +1,4 @@
+# @package protocol
+name: within_subject_cv
+k: 5
+seed: 0

@@ -4,14 +4,23 @@ version = "0.1.0"
 description = "CS229: cross-subject calibration efficiency for continuous EEG hand-kinematic decoding"
 requires-python = ">=3.12"
 dependencies = [
+    "braindecode>=1.3.1",
+    "einops>=0.8.0",
+    "gitpython>=3.1.40",
     "h5py>=3.16.0",
+    "huggingface-hub>=0.24.0",
+    "hydra-core>=1.3.2",
     "matplotlib>=3.10.9",
     "mne>=1.12.1",
     "numpy>=2.4.4",
+    "omegaconf>=2.3.0",
     "pandas>=3.0.3",
+    "pyriemann>=0.7",
     "requests>=2.34.0",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
+    "timm>=0.9.0,<1.0",
     "torch>=2.11.0",
     "tqdm>=4.67.3",
+    "wandb>=0.18.0",
 ]

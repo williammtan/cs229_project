@@ -152,3 +152,34 @@ def summarize_evaluation(
     null = shuffled_null_r(y_true, y_pred, n_perms=n_perms, rng=rng)
     ci = bootstrap_ci_r(y_true, y_pred, n_boot=n_boot, rng=rng)
     return {"metrics": m.to_dict(), "null": null, "ci": ci}
+
+
+def flatten_for_logging(eval_bundle: dict, prefix: str = "eval") -> dict[str, float]:
+    """Flatten ``summarize_evaluation`` output to dotted W&B-style keys.
+
+    Produces metrics like ``eval/pearson_r/mean``, ``eval/pearson_r/x``,
+    ``eval/r2/mean``, ``eval/null/p_value/mean``, ``eval/ci/lower/mean``.
+    Axis order is (x, y, z) per the kinematic target convention.
+    """
+    AXES = ("x", "y", "z")
+    out: dict[str, float] = {}
+    m = eval_bundle["metrics"]
+    for axis_metric, mean_key, per_axis_key in (
+        ("pearson_r", "pearson_r_mean", "pearson_r_per_axis"),
+        ("r2", "r2_mean", "r2_per_axis"),
+        ("rmse", "rmse_mean", "rmse_per_axis"),
+    ):
+        out[f"{prefix}/{axis_metric}/mean"] = float(m[mean_key])
+        for i, v in enumerate(m[per_axis_key]):
+            ax = AXES[i] if i < len(AXES) else str(i)
+            out[f"{prefix}/{axis_metric}/{ax}"] = float(v)
+    null = eval_bundle.get("null", {})
+    if null:
+        out[f"{prefix}/null/p_value/mean"] = float(np.mean(null["p_values"]))
+        out[f"{prefix}/null/r_p95/mean"] = float(np.mean(null["null_r_p95"]))
+    ci = eval_bundle.get("ci", {})
+    if ci:
+        out[f"{prefix}/ci/lower/mean"] = float(np.mean(ci["ci_low"]))
+        out[f"{prefix}/ci/upper/mean"] = float(np.mean(ci["ci_high"]))
+    out[f"{prefix}/n_samples"] = int(m["n_samples"])
+    return out

@@ -1,0 +1,3 @@
+# @package logger
+name: offline
+root: results/offline_runs

@@ -1,0 +1,13 @@
+# @package _global_
+# 16-channel "demo day" cap. Drops the temporal-most + occipital sensors,
+# keeping the sensorimotor strip symmetrically. See src.data.channels.MOTOR_16.
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: loso
+head:
+  name: linear_probe
+  alpha: 1.0
+backbone:
+  n_channels: 16
+dataset:
+  channels: 16

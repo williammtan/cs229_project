@@ -1,0 +1,4 @@
+# @package backbone
+name: bradberry_mlr
+lags: [0, 5, 10, 15, 20, 25]
+alpha: 1.0

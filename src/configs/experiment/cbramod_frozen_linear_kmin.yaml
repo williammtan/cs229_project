@@ -1,0 +1,7 @@
+# @package _global_
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: kmin_calibration
+head:
+  name: linear_probe
+  alpha: 1.0

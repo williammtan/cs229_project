@@ -1,0 +1,8 @@
+# @package backbone
+name: cbramod_frozen
+n_channels: 32
+win_seconds: 2.0   # 2s window = 2 patches @ 200Hz, mitigates short-trial flaw
+hop_seconds: 0.2
+freeze: true
+batch_size: 32
+pretrained_id: braindecode/CBraMod-Pretrained

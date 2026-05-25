@@ -1,0 +1,9 @@
+# @package backbone
+name: labram_frozen
+n_channels: 32
+win_seconds: 2.0
+hop_seconds: 0.2
+freeze: true
+batch_size: 32
+pretrained_id: braindecode/Labram-Braindecode
+use_cls_token: true

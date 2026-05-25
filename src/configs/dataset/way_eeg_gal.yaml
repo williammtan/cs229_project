@@ -1,0 +1,6 @@
+# @package dataset
+name: way_eeg_gal
+subjects: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+series: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+channels: 32
+target_fs: 100

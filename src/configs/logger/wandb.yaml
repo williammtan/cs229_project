@@ -1,0 +1,6 @@
+# @package logger
+name: wandb
+project: etm
+entity: null
+mode: online
+dir: null

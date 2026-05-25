@@ -1,0 +1,19 @@
+# @package backbone
+name: eegnet
+n_channels: 32
+n_out: 3
+f1: 8
+d: 2
+f2: 16
+kernel_len: 50
+dropout: 0.25
+train:
+  win_samples: 100
+  hop_samples: 20
+  batch_size: 128
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  epochs: 25
+  patience: 4
+  val_frac: 0.1
+  seed: 0

@@ -1,0 +1,10 @@
+# @package backbone
+name: reve_frozen
+n_channels: 32
+win_seconds: 2.0
+hop_seconds: 0.2
+freeze: true
+batch_size: 16   # 69M params -- smaller batch for CPU
+# Gated HF repo. If huggingface-cli login isn't set, backbone falls back to
+# random init with a clear warning, so the pipeline still runs.
+pretrained_id: braindecode/REVE-Pretrained

@@ -9,4 +9,7 @@ wheels/
 # Virtual environments
 .venv
 
-data/
+/data/
+/outputs/
+/results/offline_runs/
+wandb/
