@@ -14,21 +14,24 @@ CS229 final project. Decoding continuous 3D hand velocity from non-invasive scal
 uv sync
 
 # 2. Download WAY-EEG-GAL subjects 1-3 (~2.4 GB) into data/raw/
-#    (download URLs hard-coded; expand as needed for full 12-subject pool)
-uv run python scripts/download_data.py    # TODO: separate from inline download
+uv run python scripts/download_data.py
 
 # 3. Run preliminary baselines (within-subject 5-fold CV + LOSO cross-subject)
 uv run python scripts/run_preliminary.py
 
-# 4. Generate figures and summary table for milestone.md
+# 4. Generate figures and summary table
 uv run python scripts/make_figures.py
+
+# 5. (Optional) Rebuild the milestone PDF
+cd docs && pdflatex milestone.tex && pdflatex milestone.tex
 ```
 
 ## Layout
 
 ```
+docs/        README, literature_review.md, milestone.{md,tex,pdf}, cs229.sty
 src/         data, eval, models, train  — all importable, sklearn-style APIs
-scripts/     entry points
+scripts/     entry points (download_data, run_preliminary, make_figures)
 data/raw/    downloaded WAY-EEG-GAL .mat files
 results/     preliminary.json, figures/, summary_table.md
 ```
