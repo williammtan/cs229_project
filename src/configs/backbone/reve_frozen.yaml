@@ -5,6 +5,7 @@ win_seconds: 2.0
 hop_seconds: 0.2
 freeze: true
 batch_size: 16   # 69M params -- smaller batch for CPU
-# Gated HF repo. If huggingface-cli login isn't set, backbone falls back to
-# random init with a clear warning, so the pipeline still runs.
-pretrained_id: braindecode/REVE-Pretrained
+# Gated HF repo. Requires `huggingface-cli login` + accepting the use agreement
+# at https://huggingface.co/brain-bzh/reve-base. Falls back to random init with
+# a clear warning if access is not granted.
+pretrained_id: brain-bzh/reve-base

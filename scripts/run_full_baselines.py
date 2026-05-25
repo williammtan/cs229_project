@@ -144,6 +144,8 @@ def main() -> int:
                     help="Skip these experiments")
     ap.add_argument("--no-clear", action="store_true",
                     help="Don't wipe results/offline_runs/ before launch")
+    ap.add_argument("--logger", default="offline", choices=["offline", "wandb"],
+                    help="Logger backend (W&B requires `wandb login` first)")
     args = ap.parse_args()
 
     if not args.no_clear and OFFLINE_ROOT.exists():
@@ -151,7 +153,7 @@ def main() -> int:
         shutil.rmtree(OFFLINE_ROOT)
         print(f"[clean] removed {OFFLINE_ROOT}")
 
-    overrides = []
+    overrides = [f"logger={args.logger}"]
     if args.subjects is not None:
         overrides.append(f"dataset.subjects=[{','.join(str(s) for s in args.subjects)}]")
     if args.series is not None:

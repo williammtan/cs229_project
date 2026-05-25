@@ -99,10 +99,14 @@ def _load_overlap(target: nn.Module, source_state: dict) -> int:
 
 
 def _load_hf_state_dict(repo_id: str, filename: str) -> dict:
-    """Download a state-dict blob from HF and load it. Handles .bin and .pt."""
+    """Download a state-dict blob from HF and load it. Handles .bin/.pt/.safetensors."""
     from huggingface_hub import hf_hub_download
 
     path = hf_hub_download(repo_id, filename)
+    if filename.endswith(".safetensors"):
+        from safetensors.torch import load_file
+
+        return load_file(path)
     obj = torch.load(path, map_location="cpu", weights_only=True)
     if isinstance(obj, dict) and "state_dict" in obj:
         obj = obj["state_dict"]

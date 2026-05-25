@@ -5,10 +5,11 @@ positional encoding fed by electrode coordinates; we hand it WAY-EEG-GAL's
 ActiCap montage as an MNE ``info`` derived from ``standard_1020``.
 
 Pretrained weights:
-    HuggingFace ``braindecode/REVE-Pretrained`` — *gated*. Requires
+    HuggingFace ``brain-bzh/reve-base`` — *gated*. Requires
     ``huggingface-cli login`` + accepting the responsible-use agreement on the
-    model page. If unavailable the wrapper falls back to random init with a
-    clear warning so the pipeline still runs end-to-end.
+    model page. The state-dict keys map directly into braindecode's REVE
+    class (139/140 tensors). If access is not granted the wrapper falls back
+    to random init with a clear warning so the pipeline still runs end-to-end.
 """
 from __future__ import annotations
 
@@ -46,7 +47,7 @@ class REVEBackbone(FMBackboneBase):
         hop_seconds: float = 0.2,
         freeze: bool = True,
         batch_size: int = 16,  # 69M params; smaller batch
-        pretrained_id: str | None = "braindecode/REVE-Pretrained",
+        pretrained_id: str | None = "brain-bzh/reve-base",
         finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id

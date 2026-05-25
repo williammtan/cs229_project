@@ -5,7 +5,7 @@ win_seconds: 2.0
 hop_seconds: 0.2
 freeze: false
 batch_size: 8     # 69M params -- small batch
-pretrained_id: braindecode/REVE-Pretrained
+pretrained_id: brain-bzh/reve-base
 finetune_train:
   lr: 3.0e-5
   weight_decay: 1.0e-4
