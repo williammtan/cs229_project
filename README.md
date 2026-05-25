@@ -4,8 +4,8 @@ CS229 final project. Decoding continuous 3D hand velocity from non-invasive scal
 
 ## Documents
 
-- [`literature_review.md`](literature_review.md) — full prior-work survey across datasets, architectures, cross-subject transfer, recent top-venue papers, and open methodological problems.
-- [`milestone.md`](milestone.md) — Motivation, Methods, Preliminary Experiments & Results, Next Steps.
+- [`literature_review.md`](docs/literature_review.md) — full prior-work survey across datasets, architectures, cross-subject transfer, recent top-venue papers, and open methodological problems.
+- [`milestone.md`](docs/milestone.md) — Motivation, Methods, Preliminary Experiments & Results, Next Steps.
 
 ## Quickstart
 
@@ -29,7 +29,7 @@ cd docs && pdflatex milestone.tex && pdflatex milestone.tex
 ## Layout
 
 ```
-docs/        README, literature_review.md, milestone.{md,tex,pdf}, cs229.sty
+docs/        literature_review.md, milestone.{md,tex,pdf}, cs229.sty
 src/         data, eval, models, train  — all importable, sklearn-style APIs
 scripts/     entry points (download_data, run_preliminary, make_figures)
 data/raw/    downloaded WAY-EEG-GAL .mat files
