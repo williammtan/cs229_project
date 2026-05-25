@@ -26,6 +26,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from src.backbones.base import BackboneBase
+from src.backbones.lora import LoRALinear, count_trainable, inject_lora
 from src.data.channels import (
     ACTICAP_32,
     channel_indices,
@@ -47,6 +48,10 @@ def _device() -> torch.device:
 
 
 # Default finetune hyperparameters — used when finetune_train is None.
+#
+# LP-warmup + LoRA defaults are OFF here so the legacy finetune path is
+# unchanged. Experiment configs that want the REVE-paper recipe (LP→FT + LoRA)
+# set ``lp_warmup_epochs``, ``lora_rank``, and ``lora_target_patterns``.
 _DEFAULT_FT_TRAIN = dict(
     lr=5.0e-5,
     weight_decay=1.0e-4,
@@ -57,6 +62,17 @@ _DEFAULT_FT_TRAIN = dict(
     seed=0,
     grad_clip=1.0,
     max_train_windows=None,  # cap total training windows; None = no cap
+    # ---- REVE-paper LP→FT + LoRA recipe (Kumar et al. 2022; REVE §3.3) ----
+    # epochs of phase 1, head-only with encoder frozen. 0 disables LP warmup.
+    lp_warmup_epochs=0,
+    # learning rate during phase 1; can differ from main `lr`.
+    lp_lr=None,  # None -> use `lr`
+    # LoRA rank for phase 2. 0 = full unfreeze (legacy behavior).
+    lora_rank=0,
+    lora_alpha=16.0,
+    # qualified-name patterns to inject LoRA into. Matched fnmatch-style; bare
+    # names (e.g. "to_qkv") match any module ending with that name.
+    lora_target_patterns=("to_qkv", "to_out"),
 )
 
 
@@ -179,20 +195,87 @@ class FMBackboneBase(BackboneBase):
             return None
         self._finetune(trials)
 
+    # ---- head detection (override in subclass if needed) ---------------------
+
+    def _head_module(self) -> nn.Module:
+        """The regression head trained during the LP-warmup phase.
+
+        Default: ``self.model.final_layer`` (REVE/CBraMod). LaBraM keeps its
+        head elsewhere; override in those subclasses if you enable LP warmup.
+        """
+        if hasattr(self.model, "final_layer"):
+            return self.model.final_layer
+        raise AttributeError(
+            f"{type(self).__name__}: no `final_layer` found; override `_head_module()` "
+            f"to point at the regression head before enabling LP warmup."
+        )
+
+    # ---- training-mode helpers ----------------------------------------------
+
+    def _freeze_all(self) -> None:
+        for p in self.model.parameters():
+            p.requires_grad_(False)
+
+    def _enable_head_only(self) -> None:
+        """Phase 1 (LP warmup): encoder frozen, only the regression head trains."""
+        self._freeze_all()
+        for p in self._head_module().parameters():
+            p.requires_grad_(True)
+
+    def _enable_full_or_lora(self, lora_rank: int) -> None:
+        """Phase 2 (FT): either unfreeze everything (legacy) or train LoRA + head."""
+        if lora_rank > 0:
+            self._freeze_all()
+            for p in self._head_module().parameters():
+                p.requires_grad_(True)
+            for m in self.model.modules():
+                if isinstance(m, LoRALinear):
+                    m.lora_A.requires_grad_(True)
+                    m.lora_B.requires_grad_(True)
+        else:
+            for p in self.model.parameters():
+                p.requires_grad_(True)
+
+    # ---- finetune loop -------------------------------------------------------
+
     def _finetune(self, trials: list["Trial"]) -> None:
-        """End-to-end finetune of the FM on per-window-mean-velocity targets."""
+        """End-to-end finetune.
+
+        Implements the REVE-paper recipe (Kumar et al. 2022 LP→FT, plus LoRA on
+        attention QKVO) when ``lp_warmup_epochs > 0`` and/or ``lora_rank > 0``.
+        With both at 0 this is identical to the legacy full-unfreeze finetune.
+        """
         cfg = self.train_cfg
         rng = np.random.default_rng(cfg["seed"])
         torch.manual_seed(cfg["seed"])
 
-        X, y = self._concat_windows(trials)
+        # Optional LoRA injection BEFORE building any optimizer — once injected,
+        # the parameter list of the model is stable for the whole training run.
+        lora_rank = int(cfg.get("lora_rank", 0) or 0)
+        if lora_rank > 0:
+            n_inj = inject_lora(
+                self.model,
+                target_patterns=list(cfg["lora_target_patterns"]),
+                r=lora_rank,
+                alpha=float(cfg.get("lora_alpha", 16.0)),
+            )
+            self.model.to(self.device)
+            print(f"  LoRA: injected r={lora_rank} into {n_inj} modules")
+            if n_inj == 0:
+                warnings_msg = (
+                    f"LoRA target_patterns {cfg['lora_target_patterns']} matched 0 "
+                    f"modules in {type(self.model).__name__}. Phase 2 will fall back "
+                    f"to LP-only (head trains, encoder frozen)."
+                )
+                import warnings as _warnings
+                _warnings.warn(warnings_msg, stacklevel=2)
 
-        # Optionally cap training windows for tractable runtime.
+        # ----- data prep ------------------------------------------------------
+        X, y = self._concat_windows(trials)
         if cfg["max_train_windows"] and len(X) > cfg["max_train_windows"]:
             idx = rng.choice(len(X), cfg["max_train_windows"], replace=False)
             X, y = X[idx], y[idx]
 
-        # Target z-scoring (computed on train, applied at predict time).
         self._y_mean = y.mean(axis=0)
         self._y_std = y.std(axis=0) + 1e-6
         y_z = ((y - self._y_mean) / self._y_std).astype(np.float32)
@@ -212,41 +295,89 @@ class FMBackboneBase(BackboneBase):
             shuffle=True,
             drop_last=False,
         )
-
-        for p in self.model.parameters():
-            p.requires_grad_(True)
-        opt = torch.optim.AdamW(
-            self.model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"]
-        )
         crit = nn.MSELoss()
 
         best_val = float("inf")
         best_state = None
         bad = 0
-        for epoch in range(cfg["epochs"]):
-            self.model.train()
-            for xb, yb in loader:
-                xb = xb.to(self.device, non_blocking=True)
-                yb = yb.to(self.device, non_blocking=True)
-                pred = self._forward_predict(xb)
-                loss = crit(pred, yb)
-                opt.zero_grad()
-                loss.backward()
-                if cfg["grad_clip"]:
-                    nn.utils.clip_grad_norm_(self.model.parameters(), cfg["grad_clip"])
-                opt.step()
-            self.model.eval()
-            with torch.no_grad():
-                vp = self._forward_predict(Xva)
-                val_loss = crit(vp, yva).item()
-            if val_loss < best_val - 1e-5:
-                best_val = val_loss
-                bad = 0
-                best_state = {k: v.detach().clone() for k, v in self.model.state_dict().items()}
-            else:
-                bad += 1
-                if bad >= cfg["patience"]:
-                    break
+
+        lp_epochs = int(cfg.get("lp_warmup_epochs", 0) or 0)
+        ft_epochs = max(0, int(cfg["epochs"]) - lp_epochs)
+        lp_lr = float(cfg["lp_lr"]) if cfg.get("lp_lr") is not None else float(cfg["lr"])
+
+        # ----- Phase 1: linear-probe warmup ----------------------------------
+        if lp_epochs > 0:
+            self._enable_head_only()
+            opt = torch.optim.AdamW(
+                [p for p in self.model.parameters() if p.requires_grad],
+                lr=lp_lr,
+                weight_decay=cfg["weight_decay"],
+            )
+            print(f"  LP-warmup: {lp_epochs} epochs, {count_trainable(self.model):,} trainable params")
+            for epoch in range(lp_epochs):
+                self.model.train()
+                for xb, yb in loader:
+                    xb = xb.to(self.device, non_blocking=True)
+                    yb = yb.to(self.device, non_blocking=True)
+                    pred = self._forward_predict(xb)
+                    loss = crit(pred, yb)
+                    opt.zero_grad()
+                    loss.backward()
+                    if cfg["grad_clip"]:
+                        nn.utils.clip_grad_norm_(
+                            [p for p in self.model.parameters() if p.requires_grad],
+                            cfg["grad_clip"],
+                        )
+                    opt.step()
+                self.model.eval()
+                with torch.no_grad():
+                    val_loss = crit(self._forward_predict(Xva), yva).item()
+                if val_loss < best_val - 1e-5:
+                    best_val = val_loss
+                    bad = 0
+                    best_state = {k: v.detach().clone() for k, v in self.model.state_dict().items()}
+                else:
+                    bad += 1
+                    if bad >= cfg["patience"]:
+                        break
+
+        # ----- Phase 2: full FT or LoRA-only FT ------------------------------
+        if ft_epochs > 0:
+            self._enable_full_or_lora(lora_rank)
+            opt = torch.optim.AdamW(
+                [p for p in self.model.parameters() if p.requires_grad],
+                lr=cfg["lr"],
+                weight_decay=cfg["weight_decay"],
+            )
+            phase_label = "LoRA-FT" if lora_rank > 0 else "Full-FT"
+            print(f"  {phase_label}: {ft_epochs} epochs, {count_trainable(self.model):,} trainable params")
+            for epoch in range(ft_epochs):
+                self.model.train()
+                for xb, yb in loader:
+                    xb = xb.to(self.device, non_blocking=True)
+                    yb = yb.to(self.device, non_blocking=True)
+                    pred = self._forward_predict(xb)
+                    loss = crit(pred, yb)
+                    opt.zero_grad()
+                    loss.backward()
+                    if cfg["grad_clip"]:
+                        nn.utils.clip_grad_norm_(
+                            [p for p in self.model.parameters() if p.requires_grad],
+                            cfg["grad_clip"],
+                        )
+                    opt.step()
+                self.model.eval()
+                with torch.no_grad():
+                    val_loss = crit(self._forward_predict(Xva), yva).item()
+                if val_loss < best_val - 1e-5:
+                    best_val = val_loss
+                    bad = 0
+                    best_state = {k: v.detach().clone() for k, v in self.model.state_dict().items()}
+                else:
+                    bad += 1
+                    if bad >= cfg["patience"]:
+                        break
+
         if best_state is not None:
             self.model.load_state_dict(best_state)
         self.model.eval()

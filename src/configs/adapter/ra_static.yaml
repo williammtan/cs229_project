@@ -1,0 +1,5 @@
+# @package _group_
+name: ra_static
+regularize: 1.0e-5
+target_space: identity
+zero_shot_fallback: per_trial

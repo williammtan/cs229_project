@@ -1,0 +1,5 @@
+# @package _group_
+name: ra_ema
+alpha: 0.1
+regularize: 1.0e-5
+update_online: true

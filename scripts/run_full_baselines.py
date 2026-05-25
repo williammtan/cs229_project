@@ -25,7 +25,7 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[1]
 OFFLINE_ROOT = REPO / "results" / "offline_runs"
 
-# Experiment presets in execution order — cheap -> expensive.
+# LOSO experiments (zero per-user calibration) in execution order — cheap -> expensive.
 EXPERIMENTS = [
     "baseline_bradberry_loso",
     "baseline_ridge_bandpower_loso",
@@ -37,6 +37,23 @@ EXPERIMENTS = [
     "cbramod_finetune_loso",
     "labram_finetune_loso",
     "reve_finetune_loso",
+    # Riemannian-adapter LOSO variants
+    "bradberry_ra_static_loso",
+    "eegnet_ra_static_loso",
+    "cbramod_frozen_linear_ra_static_loso",
+    "cbramod_frozen_linear_ra_ema_loso",
+]
+
+# k-min calibration-budget sweeps (different protocol; aggregated separately).
+# Each FM has a plain and an RA-static variant so we can compare calibration
+# curves with/without Riemannian alignment.
+KMIN_EXPERIMENTS = [
+    "cbramod_frozen_linear_kmin",
+    "labram_frozen_linear_kmin",
+    "reve_frozen_linear_kmin",
+    "cbramod_frozen_linear_ra_static_kmin",
+    "labram_frozen_linear_ra_static_kmin",
+    "reve_frozen_linear_ra_static_kmin",
 ]
 
 

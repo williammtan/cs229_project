@@ -1,0 +1,14 @@
+# @package _global_
+# Cheapest possible RA test: whiten EEG with per-subject Frechet-mean cov
+# (zero-shot fallback on per-trial cov for held-out subject without calibration),
+# then BradberrymLR. Doubles as a sanity check that RA improves a classical baseline.
+defaults:
+  - override /backbone: bradberry_mlr
+  - override /protocol: loso
+adapters:
+  - name: ra_static
+    regularize: 1.0e-5
+    target_space: identity
+    zero_shot_fallback: per_trial
+dataset:
+  per_trial_zscore: false

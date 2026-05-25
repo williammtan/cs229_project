@@ -113,13 +113,21 @@ def preprocess_trial(
     src_fs: int = EEG_FS,
     dst_fs: int = TARGET_FS,
     eeg_band: tuple[float, float] = EEG_BAND,
+    per_trial_zscore: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Preprocess one trial.
 
     Returns (eeg, kin, vel) all at dst_fs.
-      eeg: (32, T) float32 — band-passed, downsampled, common-average-referenced, z-scored per channel
+      eeg: (32, T) float32 — band-passed, downsampled, common-average-referenced,
+           and (if ``per_trial_zscore=True``) z-scored per channel per trial.
       kin: (3, T) float32 — hand position downsampled
       vel: (3, T) float32 — first-difference velocity * dst_fs (mm/s)
+
+    Per-trial z-scoring is fine for ConvNet / FM baselines but BREAKS Riemannian
+    alignment: forcing each trial's per-channel variance to 1 collapses
+    ``trial_cov`` into a correlation matrix, removing the cross-subject scale
+    structure that RA is designed to align. Set ``per_trial_zscore=False`` for
+    RA experiments.
     """
     # 1) Common Average Reference (subtract mean across channels at each sample)
     eeg = eeg_raw - eeg_raw.mean(axis=0, keepdims=True)
@@ -128,7 +136,8 @@ def preprocess_trial(
     # 3) Downsample
     eeg = _downsample(eeg, src_fs, dst_fs)
     # 4) Per-channel z-score (trial-wise; will be cross-validated later)
-    eeg = (eeg - eeg.mean(axis=-1, keepdims=True)) / (eeg.std(axis=-1, keepdims=True) + 1e-6)
+    if per_trial_zscore:
+        eeg = (eeg - eeg.mean(axis=-1, keepdims=True)) / (eeg.std(axis=-1, keepdims=True) + 1e-6)
     eeg = eeg.astype(np.float32)
 
     # Kinematics: pick hand position cols, low-pass smooth at 5 Hz, downsample,
@@ -147,6 +156,7 @@ def load_subject(
     series: Iterable[int] | None = None,
     src_fs: int = EEG_FS,
     dst_fs: int = TARGET_FS,
+    per_trial_zscore: bool = True,
 ) -> SubjectData:
     """Load all trials for a subject. WAY-EEG-GAL has up to 9 series per subject."""
     raw_dir = Path(raw_dir)
@@ -163,7 +173,10 @@ def load_subject(
         eegs, kins = _load_ws_mat(path)
         for i, (eeg_raw, kin_raw) in enumerate(zip(eegs, kins)):
             try:
-                eeg, kin, vel = preprocess_trial(eeg_raw, kin_raw, src_fs, dst_fs)
+                eeg, kin, vel = preprocess_trial(
+                    eeg_raw, kin_raw, src_fs, dst_fs,
+                    per_trial_zscore=per_trial_zscore,
+                )
             except Exception:
                 continue
             trials.append(Trial(
@@ -195,9 +208,13 @@ def load_dataset(
     series: Iterable[int] | None = None,
     src_fs: int = EEG_FS,
     dst_fs: int = TARGET_FS,
+    per_trial_zscore: bool = True,
 ) -> dict[int, SubjectData]:
     """Convenience: load multiple subjects into ``{subject_id: SubjectData}``."""
     out: dict[int, SubjectData] = {}
     for s in subjects:
-        out[s] = load_subject(raw_dir, subject=s, series=series, src_fs=src_fs, dst_fs=dst_fs)
+        out[s] = load_subject(
+            raw_dir, subject=s, series=series, src_fs=src_fs, dst_fs=dst_fs,
+            per_trial_zscore=per_trial_zscore,
+        )
     return out

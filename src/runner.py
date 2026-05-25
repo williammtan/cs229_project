@@ -83,6 +83,7 @@ def _load_data(raw_dir: str, dataset_cfg: dict[str, Any]) -> dict[int, SubjectDa
         subjects=dataset_cfg["subjects"],
         series=dataset_cfg["series"],
         dst_fs=dataset_cfg.get("target_fs", 100),
+        per_trial_zscore=dataset_cfg.get("per_trial_zscore", True),
     )
 
 

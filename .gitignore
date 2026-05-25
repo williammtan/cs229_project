@@ -12,4 +12,9 @@ wheels/
 /data/
 /outputs/
 /results/offline_runs/
+/results/_hydra/
+/results/_ra_smoke*/
 wandb/
+
+.env
+.DS_Store

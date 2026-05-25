@@ -12,6 +12,7 @@ dependencies = [
     "hydra-core>=1.3.2",
     "matplotlib>=3.10.9",
     "mne>=1.12.1",
+    "modal>=1.4.3",
     "numpy>=2.4.4",
     "omegaconf>=2.3.0",
     "pandas>=3.0.3",
@@ -24,3 +25,23 @@ dependencies = [
     "tqdm>=4.67.3",
     "wandb>=0.18.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-xdist>=3.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "fm: tests that require foundation-model weight downloads (slow, skipped by default)",
+    "slow: tests that take more than a few seconds",
+]
+filterwarnings = [
+    # pyriemann's Frechet-mean iteration sometimes warns about non-convergence
+    # on synthetic / ill-conditioned inputs — that's the behaviour we're testing,
+    # not a failure.
+    "ignore:Convergence not reached:UserWarning",
+]
+addopts = "-ra -m 'not fm'"

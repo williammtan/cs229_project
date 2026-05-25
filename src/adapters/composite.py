@@ -1,19 +1,47 @@
 """Stack multiple adapters: each subsequent adapter sees the previous one's output.
 
-Plan.md calls for combinations like ``RA + LoRA`` (align in feature space first,
-then per-subject LoRA fine-tune). AdapterStack is what those compose into.
+Trial-space transforms run in list order before encoding. Feature-space
+transforms run in list order after encoding. Both orderings are independent;
+an adapter that's "input-only" is silent on the feature path and vice versa.
 """
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from src.adapters.base import AdapterBase
+
+if TYPE_CHECKING:
+    from src.data.way_eeg_gal import Trial
 
 
 class AdapterStack(AdapterBase):
     def __init__(self, adapters: list[AdapterBase]):
         self.adapters = adapters
 
+    # ---- trial-space ---------------------------------------------------------
+    def fit_source_trials(self, trials: list["Trial"]) -> None:
+        for a in self.adapters:
+            a.fit_source_trials(trials)
+            trials = [a.transform_trial(t) for t in trials]
+
+    def calibrate_trials(self, trials: list["Trial"]) -> None:
+        for a in self.adapters:
+            a.calibrate_trials(trials)
+            trials = [a.transform_trial(t) for t in trials]
+
+    def update_trial(self, trial: "Trial") -> None:
+        for a in self.adapters:
+            a.update_trial(trial)
+            trial = a.transform_trial(trial)
+
+    def transform_trial(self, trial: "Trial") -> "Trial":
+        for a in self.adapters:
+            trial = a.transform_trial(trial)
+        return trial
+
+    # ---- feature-space -------------------------------------------------------
     def fit_source(self, feats: np.ndarray, targets: np.ndarray) -> None:
         for a in self.adapters:
             a.fit_source(feats, targets)

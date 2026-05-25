@@ -4,3 +4,7 @@ subjects: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 series: [1, 2, 3, 4, 5, 6, 7, 8, 9]
 channels: 32
 target_fs: 100
+# Per-trial channel z-score: fine for ConvNets/FMs but collapses trial covariance
+# into a correlation matrix, breaking Riemannian alignment. Set false for any
+# experiment whose adapter operates on trial.eeg covariance (ra_static, ra_ema).
+per_trial_zscore: true

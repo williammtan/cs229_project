@@ -1,16 +1,20 @@
-"""Composable inference pipeline: Backbone -> Adapter stack -> Head.
+"""Composable inference pipeline: trial-space adapters -> Backbone -> feature-space adapters -> Head.
 
 Two flow modes:
 
 * **Monolithic** — ``head=None`` and no adapters. ``Pipeline.predict_trial``
-  delegates to ``backbone.predict_trial``. The four current baselines flow
-  this way.
+  delegates to ``backbone.predict_trial``. The four classical baselines flow
+  this way. Trial-space adapters can still run on the monolithic path
+  (e.g., Riemannian alignment in front of BradberrymLR).
 
-* **Composed** — at least one adapter or a non-None head.
-  ``backbone.encode_trial`` produces per-window features + targets, adapters
-  transform features in order, the head maps features to per-window
-  predictions, and the backbone upsamples back to the per-sample grid. Frozen
-  FM + (adapter) + linear-probe pipelines flow this way.
+* **Composed** — at least one feature-space adapter or a non-None head.
+  ``backbone.encode_trial`` produces per-window features + targets,
+  feature-space adapters transform features in order, the head maps features
+  to per-window predictions, and the backbone upsamples back to the per-sample
+  grid. Frozen FM + (adapter) + linear-probe pipelines flow this way.
+
+Trial-space adapters (RA-style) ALWAYS run, in both modes, before any
+backbone work.
 """
 from __future__ import annotations
 
@@ -40,11 +44,18 @@ class Pipeline:
     def _monolithic(self) -> bool:
         return self.head is None and not self.adapters
 
-    # ---- source-only training -------------------------------------------------
+    # ---- source-only training -----------------------------------------------
     def fit(self, train_trials: list["Trial"]) -> None:
+        # Trial-space adapters fit on source pool (per-subject groupings live
+        # inside each adapter via trial.subject).
+        for a in self.adapters:
+            a.fit_source_trials(train_trials)
+        train_trials = [self._apply_trial_transforms(t) for t in train_trials]
+
         self.backbone.fit_source(train_trials)
-        if self._monolithic:
+        if self.head is None and not any(self._has_feature_path(a) for a in self.adapters):
             return
+
         feats, targets = self._encode_concat(train_trials)
         for a in self.adapters:
             a.fit_source(feats, targets)
@@ -52,10 +63,18 @@ class Pipeline:
         if self.head is not None:
             self.head.fit(feats, targets)
 
-    # ---- per-subject calibration (K-min) -------------------------------------
+    # ---- per-subject calibration --------------------------------------------
     def calibrate(self, calib_trials: list["Trial"]) -> None:
-        if not calib_trials or self._monolithic:
+        if not calib_trials:
             return
+        # Trial-space calibration first (e.g., RA computes target-subject mean cov).
+        for a in self.adapters:
+            a.calibrate_trials(calib_trials)
+        calib_trials = [self._apply_trial_transforms(t) for t in calib_trials]
+
+        if self.head is None and not any(self._has_feature_path(a) for a in self.adapters):
+            return
+
         feats, targets = self._encode_concat(calib_trials)
         for a in self.adapters:
             a.calibrate(feats, targets)
@@ -63,14 +82,18 @@ class Pipeline:
         if self.head is not None and hasattr(self.head, "calibrate"):
             self.head.calibrate(feats, targets)
 
-    # ---- prediction ----------------------------------------------------------
+    # ---- prediction ---------------------------------------------------------
     def predict_trial(self, trial: "Trial") -> np.ndarray:
+        trial = self._apply_trial_transforms(trial)
         if self._monolithic:
+            return self.backbone.predict_trial(trial)
+        if self.head is None:
+            # No head but trial-space adapters present (e.g., RA + monolithic
+            # finetuned FM). Backbone owns prediction.
             return self.backbone.predict_trial(trial)
         feats, _ = self.backbone.encode_trial(trial)
         for a in self.adapters:
             feats = a.transform(feats)
-        assert self.head is not None, "composed pipeline requires a head"
         y_win = self.head.predict(feats)
         return self.backbone.upsample_to_per_sample(y_win, trial)
 
@@ -78,6 +101,21 @@ class Pipeline:
         return np.concatenate([self.predict_trial(t) for t in trials], axis=0)
 
     # ---- internal -----------------------------------------------------------
+    def _apply_trial_transforms(self, trial: "Trial") -> "Trial":
+        for a in self.adapters:
+            trial = a.transform_trial(trial)
+        return trial
+
+    def _has_feature_path(self, adapter: "AdapterBase") -> bool:
+        """True if the adapter overrides any feature-space hook."""
+        cls = type(adapter)
+        from src.adapters.base import AdapterBase
+
+        return any(
+            getattr(cls, name, None) is not getattr(AdapterBase, name)
+            for name in ("fit_source", "calibrate", "update", "transform")
+        )
+
     def _encode_concat(self, trials: list["Trial"]) -> tuple[np.ndarray, np.ndarray]:
         feats_list, target_list = [], []
         for t in trials:
