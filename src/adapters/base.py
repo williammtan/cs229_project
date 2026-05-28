@@ -37,7 +37,7 @@ import numpy as np
 from src.core.registry import register
 
 if TYPE_CHECKING:
-    from src.data.way_eeg_gal import Trial
+    from src.data.eegmmi import Trial
 
 
 class AdapterBase:
@@ -53,6 +53,13 @@ class AdapterBase:
 
     def transform_trial(self, trial: "Trial") -> "Trial":
         return trial
+
+    def transform_calibration_trial(self, trial: "Trial") -> "Trial":
+        """Apply the current transform to a calibration trial without advancing
+        any online state. Stateless adapters can leave this as the default;
+        online adapters (e.g. EMA-RA) override it to skip self-updates so the
+        calibration set is not folded into the target estimate twice."""
+        return self.transform_trial(trial)
 
     # ---- feature-space (post-backbone) -------------------------------------
     def fit_source(self, feats: np.ndarray, targets: np.ndarray) -> None:

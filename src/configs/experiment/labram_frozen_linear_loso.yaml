@@ -4,4 +4,4 @@ defaults:
   - override /protocol: loso
 head:
   name: linear_probe
-  alpha: 1.0
+  C: 1.0

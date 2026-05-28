@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - override /backbone: labram_frozen
+  - override /protocol: loso
+head:
+  name: convex_nn
+  n_classes: 4
+  n_neurons: 64
+  beta: 1.0e-3
+  rho: 0.1
+  admm_iters: 8
+  pcg_iters: 32
+  rank: 20

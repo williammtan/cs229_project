@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from src.data.way_eeg_gal import Trial
+    from src.data.eegmmi import Trial
 
 
 @dataclass
@@ -13,9 +13,9 @@ class Split:
     """One iteration produced by a Protocol.
 
     train:  trials used to fit the pipeline (source / pooled subjects)
-    calib:  trials used for per-subject calibration (K-min budget). May be empty.
+    calib:  trials used for per-subject calibration (K-trials budget). May be empty.
     eval:   trials used for evaluation. Disjoint from train and calib.
-    meta:   anything the logger should attach (held_out_subject, fold, k_min, seed, ...).
+    meta:   anything the logger should attach (held_out_subject, fold, k_trials, seed, ...).
     """
 
     train: list["Trial"]

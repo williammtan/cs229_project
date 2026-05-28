@@ -1,4 +1,4 @@
 # @package _global_
 defaults:
-  - override /backbone: ridge_bandpower
+  - override /backbone: csp_lda
   - override /protocol: loso

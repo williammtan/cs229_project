@@ -26,7 +26,7 @@ from src.adapters.riemannian._common import (
 from src.core.registry import register
 
 if TYPE_CHECKING:
-    from src.data.way_eeg_gal import Trial
+    from src.data.eegmmi import Trial
 
 
 @register("adapter", "ra_static")

@@ -1,7 +1,8 @@
 """Identity head — passes features straight through.
 
-Useful when a backbone emits per-window velocity directly as "features"; rare
-at runtime (those backbones are monolithic) but registered for config symmetry.
+Useful when a backbone emits per-trial class logits/labels directly as
+"features"; rare at runtime (those backbones are monolithic) but registered
+for config symmetry.
 """
 from __future__ import annotations
 

@@ -16,6 +16,7 @@ W&B scoping convention (see /Users/williamtan/.claude/plans/elegant-wishing-rock
 """
 from __future__ import annotations
 
+import os
 import subprocess
 from typing import Any
 
@@ -55,12 +56,15 @@ def _group_from_cfg(cfg: dict[str, Any]) -> str:
 
 def _job_type_from_meta(protocol_name: str, meta: dict[str, Any] | None) -> str:
     meta = meta or {}
-    if "k_minutes" in meta and "held_out_subject" in meta:
-        return f"kmin-{meta['k_minutes']}_loso-P{meta['held_out_subject']}"
+    if "k_trials_per_class" in meta and "held_out_subject" in meta:
+        return f"ktrials-{meta['k_trials_per_class']}_loso-S{meta['held_out_subject']:03d}"
     if "held_out_subject" in meta:
-        return f"loso-P{meta['held_out_subject']}"
+        return f"loso-S{meta['held_out_subject']:03d}"
+    if "held_out_runs" in meta and "subject" in meta:
+        runs = "-".join(str(r) for r in meta["held_out_runs"])
+        return f"lso-runs{runs}_S{meta['subject']:03d}"
     if "fold" in meta and "subject" in meta:
-        return f"fold-{meta['fold']}_P{meta['subject']}"
+        return f"fold-{meta['fold']}_S{meta['subject']:03d}"
     if "fold" in meta:
         return f"fold-{meta['fold']}"
     return protocol_name
@@ -78,6 +82,12 @@ def _tags_from_cfg(cfg: dict[str, Any]) -> list[str]:
     if cfg.get("dataset") and cfg["dataset"].get("channels"):
         tags.append(f"channels:{cfg['dataset']['channels']}")
     tags.append(f"seed:{cfg.get('seed', 0)}")
+    # Provenance tags from Modal env vars when running on Modal — lets the
+    # aggregator script (scripts/summarize_run.py) filter runs by sweep.
+    for env_key, prefix in (("MODAL_APP_ID", "modal-app"), ("MODAL_FUNCTION_CALL_ID", "modal-call")):
+        val = os.environ.get(env_key, "")
+        if val:
+            tags.append(f"{prefix}:{val}")
     return tags
 
 

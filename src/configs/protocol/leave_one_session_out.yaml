@@ -1,0 +1,6 @@
+# @package protocol
+name: leave_one_session_out
+seed: 0
+# Each tuple = the run-pair recorded in one EEGMMI session. Override only if
+# the dataset is restricted to a subset of imagery runs.
+sessions: [[4, 6], [8, 10], [12, 14]]

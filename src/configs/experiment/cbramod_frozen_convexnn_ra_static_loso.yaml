@@ -1,0 +1,21 @@
+# @package _global_
+# Combined RED + YELLOW: Riemannian alignment in front of frozen CBraMod
+# embeddings, then a convex 2-layer head. The "full system" cell in the
+# headline table per docs/plan_clf.md §10.
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: loso
+adapters:
+  - name: ra_static
+    regularize: 1.0e-5
+    target_space: identity
+    zero_shot_fallback: per_trial
+head:
+  name: convex_nn
+  n_classes: 4
+  n_neurons: 64
+  beta: 1.0e-3
+  rho: 0.1
+  admm_iters: 8
+  pcg_iters: 32
+  rank: 20

@@ -1,67 +1,105 @@
-"""Download WAY-EEG-GAL subjects from Figshare into data/raw/.
+"""Download PhysioNet EEG Motor Movement/Imagery (EEGMMI) subjects.
+
+Uses MNE's eegbci helper which fetches the EDF files from PhysioNet and caches
+them under ``raw_dir/S{NNN}/S{NNN}R{NN}.edf`` — the layout our loader expects.
+
+Subjects are downloaded in parallel (4 workers default) since MNE's per-subject
+``load_data`` is serial across runs; one subject ≈ 6 sequential HTTP requests.
+Four workers gives ~4× wall-clock speedup without overloading PhysioNet.
 
 Usage:
-    uv run python scripts/download_data.py            # default: subjects 1, 2, 3
-    uv run python scripts/download_data.py 1 2 3 4 5  # custom subset
+    uv run python scripts/download_data.py                 # default: subjects 1, 2
+    uv run python scripts/download_data.py 1 2 3 4 5       # custom subset
+    uv run python scripts/download_data.py --all           # all 109 minus exclusions
+    uv run python scripts/download_data.py --all -j 8      # 8 parallel workers
 """
 from __future__ import annotations
 
-import os
-import shutil
-import subprocess
+import argparse
 import sys
-import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-import requests
+# Make `src` importable when this script is invoked directly.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import mne  # noqa: E402
 
-# Figshare article IDs for each WAY-EEG-GAL participant (from collection 988376).
-ARTICLE_IDS = {
-    1: 1185502, 2: 1185505, 3: 1185507, 4: 1185509, 5: 1185511, 6: 1119392,
-    7: 1119691, 8: 1119669, 9: 1119677, 10: 1119682, 11: 1119680, 12: 1119678,
-}
-
-
-def article_files(article_id: int) -> list[dict]:
-    r = requests.get(f"https://api.figshare.com/v2/articles/{article_id}", timeout=30)
-    r.raise_for_status()
-    return r.json().get("files", [])
+from src.data.eegmmi import EXCLUDED_SUBJECTS, IMAGERY_RUNS  # noqa: E402
 
 
 def download_subject(subject: int, raw_dir: Path) -> None:
-    art = ARTICLE_IDS[subject]
-    files = article_files(art)
-    p_zip = next(f for f in files if f["name"].lower() == f"p{subject}.zip")
-    out = raw_dir / p_zip["name"]
-    if (raw_dir / f"WS_P{subject}_S1.mat").exists():
-        print(f"  P{subject}: already extracted, skipping")
+    if subject in EXCLUDED_SUBJECTS:
+        print(f"  S{subject:03d}: excluded (annotation/sfreq issue), skipping")
         return
-    print(f"  P{subject}: {p_zip['size'] / 1e6:.1f} MB -> {out}")
-    with requests.get(p_zip["download_url"], stream=True, timeout=60) as r:
-        r.raise_for_status()
-        with open(out, "wb") as f:
-            shutil.copyfileobj(r.raw, f)
-    with zipfile.ZipFile(out) as zf:
-        zf.extractall(raw_dir)
-    out.unlink()
-    print(f"  P{subject}: done")
-
-
-def main():
-    if len(sys.argv) > 1:
-        subjects = [int(s) for s in sys.argv[1:]]
-    else:
-        subjects = [1, 2, 3]
-    raw = Path(__file__).resolve().parents[1] / "data" / "raw"
-    raw.mkdir(parents=True, exist_ok=True)
-    print(f"Downloading WAY-EEG-GAL subjects {subjects} to {raw}")
-    for s in subjects:
-        if s not in ARTICLE_IDS:
-            print(f"  P{s}: unknown subject, skipping")
+    subj_dir = raw_dir / f"S{subject:03d}"
+    expected = [subj_dir / f"S{subject:03d}R{r:02d}.edf" for r in IMAGERY_RUNS]
+    if all(p.exists() for p in expected):
+        print(f"  S{subject:03d}: already present, skipping")
+        return
+    # mne.datasets.eegbci.load_data downloads to its own cache; we move/symlink
+    # into raw_dir/S{NNN}/ so all downstream code uses a single layout.
+    paths = mne.datasets.eegbci.load_data(
+        subject, runs=list(IMAGERY_RUNS), path=str(raw_dir.parent), update_path=False,
+        verbose="ERROR",
+    )
+    subj_dir.mkdir(parents=True, exist_ok=True)
+    for src in paths:
+        src = Path(src)
+        dst = subj_dir / src.name
+        if dst.exists():
             continue
-        download_subject(s, raw)
+        # symlink keeps the MNE cache canonical; falls back to copy if cross-fs.
+        try:
+            dst.symlink_to(src.resolve())
+        except OSError:
+            import shutil
+
+            shutil.copy2(src, dst)
+    print(f"  S{subject:03d}: downloaded {len(paths)} runs")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("subjects", nargs="*", type=int, default=None)
+    ap.add_argument("--all", action="store_true", help="Download all 109 minus exclusions")
+    ap.add_argument(
+        "--raw-dir", default=None,
+        help="Destination dir (default: <repo>/data/raw/eegmmi)",
+    )
+    ap.add_argument(
+        "-j", "--jobs", type=int, default=4,
+        help="Parallel workers (default 4). Use 1 for serial.",
+    )
+    args = ap.parse_args()
+
+    repo = Path(__file__).resolve().parents[1]
+    raw = Path(args.raw_dir) if args.raw_dir else repo / "data" / "raw" / "eegmmi"
+    raw.mkdir(parents=True, exist_ok=True)
+
+    if args.all:
+        subjects = [s for s in range(1, 110) if s not in EXCLUDED_SUBJECTS]
+    elif args.subjects:
+        subjects = args.subjects
+    else:
+        subjects = [1, 2]
+
+    print(f"Downloading EEGMMI subjects {len(subjects)} subjects to {raw} (jobs={args.jobs})")
+    if args.jobs <= 1:
+        for s in subjects:
+            download_subject(s, raw)
+        return 0
+
+    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        futures = {pool.submit(download_subject, s, raw): s for s in subjects}
+        for fut in as_completed(futures):
+            s = futures[fut]
+            try:
+                fut.result()
+            except Exception as e:  # noqa: BLE001
+                print(f"  S{s:03d}: FAILED {type(e).__name__}: {e}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

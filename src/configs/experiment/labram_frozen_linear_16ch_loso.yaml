@@ -1,0 +1,12 @@
+# @package _global_
+# 16-channel "demo day" cap. See src.data.channels.MOTOR_16_EEGMMI.
+defaults:
+  - override /backbone: labram_frozen
+  - override /protocol: loso
+head:
+  name: linear_probe
+  C: 1.0
+backbone:
+  n_channels: 16
+dataset:
+  channels: 16

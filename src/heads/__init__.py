@@ -1,9 +1,7 @@
-"""Heads: per-window features -> per-window predictions.
-
-The backbone owns windowing and per-sample upsampling. Heads are window-only.
-"""
+"""Heads: per-trial features -> per-trial class predictions."""
 from src.heads.base import HeadBase
 from src.heads.identity import IdentityHead
-from src.heads.linear_probe import LinearProbeHead
+from src.heads.softmax_probe import SoftmaxProbeHead
+from src.heads.convex_nn import ConvexNNHead
 
-__all__ = ["HeadBase", "IdentityHead", "LinearProbeHead"]
+__all__ = ["HeadBase", "IdentityHead", "SoftmaxProbeHead", "ConvexNNHead"]

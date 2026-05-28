@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Iterator
 
 from src.core.types import Split
-from src.data.way_eeg_gal import SubjectData
+from src.data.eegmmi import SubjectData
 
 
 class ProtocolBase:

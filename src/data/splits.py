@@ -1,4 +1,4 @@
-"""Cross-validation and calibration-budget splits.
+"""Cross-validation and calibration-budget splits for EEGMMI classification.
 
 Splits operate on a ``{subject_id: SubjectData}`` mapping and yield
 ``Split(train, calib, eval, meta)``. The runner doesn't care which split it
@@ -11,15 +11,14 @@ from typing import Iterator
 import numpy as np
 
 from src.core.types import Split
-from src.data.way_eeg_gal import SubjectData, Trial
+from src.data.eegmmi import SubjectData, Trial
 
 
 class WithinSubjectKFold:
     """k-fold across trials within each subject, preserving temporal order.
 
-    Yields one Split per (subject, fold). ``calib`` is always empty for
-    within-subject CV — calibration is irrelevant when train and eval are the
-    same subject.
+    Yields one Split per (subject, fold). ``calib`` is always empty here —
+    calibration is irrelevant when train and eval are the same subject.
     """
 
     def __init__(self, k: int = 5, seed: int = 0):
@@ -48,16 +47,29 @@ class WithinSubjectKFold:
 class LOSO:
     """Leave-one-subject-out. Train pooled on N-1, evaluate on held-out subject.
 
-    ``calib`` is empty here. If you want LOSO + K-min calibration, use
-    ``KMinCalibration(base=LOSO())``.
+    When ``n_held_out`` is set and less than the number of subjects in ``data``,
+    only that many subjects are sampled (deterministically from ``seed``) as
+    held-out folds — each still trained on all *other* subjects. This is
+    K-subject random-subsample LOSO, the standard efficiency trick when N is
+    large (e.g. 104 EEGMMI subjects): 20 folds give a clean mean ± std and
+    enough power for paired Wilcoxon comparisons, at 5× the speed.
+
+    ``calib`` is empty here. If you want LOSO + K-trials calibration, use
+    ``KTrialsCalibration(base=LOSO())``.
     """
 
-    def __init__(self, seed: int = 0):
+    def __init__(self, seed: int = 0, n_held_out: int | None = None):
         self.seed = seed
+        self.n_held_out = n_held_out
 
     def iter_splits(self, data: dict[int, SubjectData]) -> Iterator[Split]:
         subjects = sorted(data.keys())
-        for held_out in subjects:
+        if self.n_held_out is not None and self.n_held_out < len(subjects):
+            rng = np.random.default_rng(self.seed)
+            held_out_set = sorted(rng.choice(subjects, size=self.n_held_out, replace=False).tolist())
+        else:
+            held_out_set = subjects
+        for held_out in held_out_set:
             train_trials: list[Trial] = []
             for s in subjects:
                 if s == held_out:
@@ -68,7 +80,7 @@ class LOSO:
                 calib=[],
                 eval=list(data[held_out].trials),
                 meta={
-                    "held_out_subject": held_out,
+                    "held_out_subject": int(held_out),
                     "train_subjects": [s for s in subjects if s != held_out],
                 },
             )
@@ -79,30 +91,33 @@ def _kfold_indices(n_items: int, k: int) -> list[np.ndarray]:
     return np.array_split(np.arange(n_items), k)
 
 
-def sample_k_minutes(
+def sample_k_trials_per_class(
     sd: SubjectData,
-    k_minutes: float,
+    k_per_class: int,
     seed: int = 0,
 ) -> tuple[list[Trial], list[Trial]]:
-    """Sample the first ``k_minutes`` of recording from a subject as the calibration
-    set; everything after becomes the evaluation set. Uses trial wall-clock duration
-    (computed from ``trial.fs``).
+    """Sample ``k_per_class`` trials per class as calibration, rest as eval.
 
-    Returns (calib_trials, eval_trials). If k_minutes <= 0, calib is empty.
+    Class balance is enforced. Sampling is the *first* ``k_per_class`` trials of
+    each class in temporal order, which mimics "the subject completed the first
+    K cues of each type as a calibration block." If a class has fewer than
+    ``k_per_class`` trials available, all of them go to calibration and the
+    eval set still excludes them.
+
+    Returns (calib, eval). If ``k_per_class <= 0``, calib is empty.
     """
-    if k_minutes <= 0:
+    if k_per_class <= 0:
         return [], list(sd.trials)
-    budget_sec = k_minutes * 60.0
-    calib: list[Trial] = []
-    used_sec = 0.0
-    eval_start = 0
+    by_class: dict[int, list[int]] = {}
     for i, t in enumerate(sd.trials):
-        dur = t.eeg.shape[-1] / float(t.fs)
-        if used_sec + dur <= budget_sec:
-            calib.append(t)
-            used_sec += dur
-            eval_start = i + 1
-        else:
-            break
-    eval_trials = list(sd.trials[eval_start:])
+        by_class.setdefault(t.label, []).append(i)
+    calib_idx: set[int] = set()
+    for cls_indices in by_class.values():
+        for i in cls_indices[:k_per_class]:
+            calib_idx.add(i)
+    calib = [t for i, t in enumerate(sd.trials) if i in calib_idx]
+    eval_trials = [t for i, t in enumerate(sd.trials) if i not in calib_idx]
+    # Determinism doesn't depend on seed yet because the first-N selector is
+    # already deterministic, but keep the parameter for future shuffled variants.
+    _ = seed
     return calib, eval_trials

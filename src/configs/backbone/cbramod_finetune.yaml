@@ -1,18 +1,20 @@
 # @package backbone
-name: cbramod_finetune   # aliased to the same class as cbramod_frozen; differs in freeze flag
-n_channels: 32
-win_seconds: 2.0
-hop_seconds: 0.2
+name: cbramod_finetune
+n_channels: 64
+trial_seconds: 4.0
 freeze: false
 batch_size: 16
+n_classes: 4
 pretrained_id: braindecode/CBraMod-Pretrained
+input_scale: 1.0e6   # MNE returns volts; pretrained CBraMod expects microvolt-scale EEG.
+feature_pool: channel_mean
 finetune_train:
   lr: 5.0e-5
   weight_decay: 1.0e-4
-  epochs: 8
-  patience: 2
+  epochs: 15
+  patience: 4
   batch_size: 16
   val_frac: 0.1
   seed: 0
   grad_clip: 1.0
-  max_train_windows: 4000   # ~3.5x speed-up vs full pool; ample for FM finetune
+  max_train_trials: 8000

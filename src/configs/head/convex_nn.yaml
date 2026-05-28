@@ -1,0 +1,12 @@
+# @package head
+# Pilanci-Ergen 2020 convex 2-layer ReLU MLP, ADMM-trained via vendor/CLD.
+name: convex_nn
+n_classes: 4
+n_neurons: 64       # P_S — hyperplane samples. Hidden width = 2 * n_neurons.
+beta: 1.0e-3        # L2 reg on weights.
+rho: 0.1            # ADMM penalty (convergence-speed knob).
+admm_iters: 8
+pcg_iters: 32
+rank: 20            # Nyström preconditioner rank.
+seed: 0
+calibrate_on_calib: true

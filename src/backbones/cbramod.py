@@ -13,52 +13,53 @@ import warnings
 import torch
 import torch.nn as nn
 
-from src.backbones.fm_base import FMBackboneBase
+from src.backbones.fm_base import FMBackboneBase, pool_spatiotemporal_tokens
 from src.core.registry import register
 
 
 @register("backbone", "cbramod_frozen")
 @register("backbone", "cbramod_finetune")
 class CBraModBackbone(FMBackboneBase):
-    """CBraMod with mean-pooled per-window features."""
+    """CBraMod with configurable per-trial token pooling."""
 
     embed_dim = 200
     PATCH_SIZE = 200  # samples @ 200 Hz = 1 s, hard-coded by CBraMod pretraining
 
     def __init__(
         self,
-        n_channels: int = 32,
-        win_seconds: float = 2.0,  # >=2s recommended (LAtte short-trial flaw)
-        hop_seconds: float = 0.2,
+        n_channels: int = 64,
+        trial_seconds: float = 4.0,  # >=2s recommended (LAtte short-trial flaw); 4s for EEGMMI
         freeze: bool = True,
         batch_size: int = 32,
+        n_classes: int = 4,
         pretrained_id: str | None = "braindecode/CBraMod-Pretrained",
+        input_scale: float = 1.0e6,
+        feature_pool: str = "channel_mean",
         finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id
+        self.feature_pool = feature_pool
         super().__init__(
             n_channels=n_channels,
             target_fs=200,
-            win_seconds=win_seconds,
-            hop_seconds=hop_seconds,
+            trial_seconds=trial_seconds,
             freeze=freeze,
             batch_size=batch_size,
+            n_classes=n_classes,
+            input_scale=input_scale,
             finetune_train=finetune_train,
         )
 
     def _build_model(self) -> nn.Module:
         from braindecode.models import CBraMod
 
-        # n_outputs required by braindecode's classifier head; we ignore it (we
-        # only call return_features=True). n_times must be a multiple of 200.
-        n_times = self.win_samples
+        n_times = self.trial_samples
         if n_times % self.PATCH_SIZE != 0:
             raise ValueError(
-                f"win_seconds * 200 must be a multiple of {self.PATCH_SIZE}; "
-                f"got {n_times}."
+                f"trial_seconds * 200 must be a multiple of {self.PATCH_SIZE}; got {n_times}."
             )
         model = CBraMod(
-            n_outputs=3,
+            n_outputs=self.n_classes,
             n_chans=self.n_channels,
             n_times=n_times,
             sfreq=self.target_fs,
@@ -81,9 +82,11 @@ class CBraModBackbone(FMBackboneBase):
 
     def _forward_features(self, x: torch.Tensor) -> torch.Tensor:
         out = self.model(x, return_features=True)
-        # out['features']: (B, C, S, 200) — mean-pool over (C, S) -> (B, 200)
+        # out['features']: (B, C, S, 200). The model's native classifier flattens
+        # the full C x S grid; default to preserving channel identity while
+        # averaging over temporal patches for a tractable frozen probe.
         feats = out["features"]
-        return feats.mean(dim=(1, 2))
+        return pool_spatiotemporal_tokens(feats, self.feature_pool)
 
 
 def _load_overlap(target: nn.Module, source_state: dict) -> int:

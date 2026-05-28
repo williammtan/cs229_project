@@ -3,29 +3,27 @@
 #   1. Linear-probe warmup with encoder frozen (Kumar et al. 2022 LP→FT).
 #   2. LoRA (Hu et al. 2022) on attention QKVO — only low-rank adapters + head
 #      receive gradients in the FT phase; the 69M-param encoder stays frozen.
-# Both knobs default to 0 in src.backbones.fm_base — config sets them here so
-# the recipe is opt-in per-experiment.
 name: reve_finetune
-n_channels: 32
-win_seconds: 2.0
-hop_seconds: 0.2
+n_channels: 64
+trial_seconds: 4.0
 freeze: false
-batch_size: 8     # 69M params -- small batch
+batch_size: 8
+n_classes: 4
 pretrained_id: brain-bzh/reve-base
+feature_pool: channel_mean
 finetune_train:
   lr: 3.0e-5
   weight_decay: 1.0e-4
-  epochs: 12        # total epochs across LP+FT; lp_warmup_epochs is taken from this budget
-  patience: 3
+  epochs: 15
+  patience: 4
   batch_size: 8
   val_frac: 0.1
   seed: 0
   grad_clip: 1.0
-  max_train_windows: 2000
-  # ---- REVE-paper LP→FT + LoRA --------------------------------------------
-  lp_warmup_epochs: 4    # head-only training first (encoder frozen)
-  lp_lr: 1.0e-3          # head can take a more aggressive LR
+  max_train_trials: 4000
+  # ---- REVE-paper LP→FT + LoRA ---------------------------------------------
+  lp_warmup_epochs: 4
+  lp_lr: 1.0e-3
   lora_rank: 8
   lora_alpha: 16.0
-  # REVE's attention has a fused QKV linear (`to_qkv`) and an output `to_out`.
   lora_target_patterns: ["to_qkv", "to_out"]

@@ -33,7 +33,7 @@ from src.adapters.riemannian._common import (
 from src.core.registry import register
 
 if TYPE_CHECKING:
-    from src.data.way_eeg_gal import Trial
+    from src.data.eegmmi import Trial
 
 
 @register("adapter", "ra_ema")
@@ -120,3 +120,22 @@ class EMARA(AdapterBase):
         from dataclasses import replace
 
         return replace(trial, eeg=eeg_aligned)
+
+    # ---- calibration transform (no online state advancement) ---------------
+    def transform_calibration_trial(self, trial: "Trial") -> "Trial":
+        """Whiten with the current per-subject estimator without advancing the
+        online EMA. ``calibrate_trials`` has already folded these trials into
+        the target's Frechet mean; running the geodesic update here too would
+        double-count them and leave eval starting from an order-dependent state."""
+        sid = trial.subject
+        if sid in self._whiteners:
+            W = self._whiteners[sid]
+        else:
+            # Defensive: calibrate_trials() should have populated this first.
+            cov = trial_cov(trial.eeg, self.regularize)
+            self._means[sid] = cov
+            self._whiteners[sid] = whitener(cov)
+            W = self._whiteners[sid]
+        from dataclasses import replace
+
+        return replace(trial, eeg=whiten_eeg(trial.eeg, W))

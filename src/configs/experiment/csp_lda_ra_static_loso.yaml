@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - override /backbone: csp_lda
+  - override /protocol: loso
+adapters:
+  - name: ra_static
+    regularize: 1.0e-5
+    target_space: identity
+    zero_shot_fallback: per_trial

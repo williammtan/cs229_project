@@ -13,7 +13,7 @@ import numpy as np
 from src.adapters.base import AdapterBase
 
 if TYPE_CHECKING:
-    from src.data.way_eeg_gal import Trial
+    from src.data.eegmmi import Trial
 
 
 class AdapterStack(AdapterBase):
@@ -29,7 +29,8 @@ class AdapterStack(AdapterBase):
     def calibrate_trials(self, trials: list["Trial"]) -> None:
         for a in self.adapters:
             a.calibrate_trials(trials)
-            trials = [a.transform_trial(t) for t in trials]
+            # Thread post-calibration trials through without advancing online state.
+            trials = [a.transform_calibration_trial(t) for t in trials]
 
     def update_trial(self, trial: "Trial") -> None:
         for a in self.adapters:
@@ -39,6 +40,11 @@ class AdapterStack(AdapterBase):
     def transform_trial(self, trial: "Trial") -> "Trial":
         for a in self.adapters:
             trial = a.transform_trial(trial)
+        return trial
+
+    def transform_calibration_trial(self, trial: "Trial") -> "Trial":
+        for a in self.adapters:
+            trial = a.transform_calibration_trial(trial)
         return trial
 
     # ---- feature-space -------------------------------------------------------

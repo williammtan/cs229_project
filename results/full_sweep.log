@@ -1,0 +1,329 @@
+======================================================================
+dataset:
+  name: eegmmi
+  subjects:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+  - 29
+  - 30
+  - 31
+  - 32
+  - 33
+  - 34
+  - 35
+  - 36
+  - 37
+  - 38
+  - 39
+  - 40
+  - 41
+  - 42
+  - 43
+  - 44
+  - 45
+  - 46
+  - 47
+  - 48
+  - 49
+  - 50
+  - 51
+  - 52
+  - 53
+  - 54
+  - 55
+  - 56
+  - 57
+  - 58
+  - 59
+  - 60
+  - 61
+  - 62
+  - 63
+  - 64
+  - 65
+  - 66
+  - 67
+  - 68
+  - 69
+  - 70
+  - 71
+  - 72
+  - 73
+  - 74
+  - 75
+  - 76
+  - 77
+  - 78
+  - 79
+  - 80
+  - 81
+  - 82
+  - 83
+  - 84
+  - 85
+  - 86
+  - 87
+  - 90
+  - 91
+  - 93
+  - 94
+  - 95
+  - 96
+  - 97
+  - 98
+  - 99
+  - 101
+  - 102
+  - 103
+  - 105
+  - 106
+  - 107
+  - 108
+  - 109
+  runs:
+  - 4
+  - 6
+  - 8
+  - 10
+  - 12
+  - 14
+  channels: 64
+  target_fs: 100
+  tmin: 0.0
+  tmax: 4.0
+  n_classes: 4
+backbone:
+  name: csp_lda
+  n_classes: 4
+  n_components: 8
+  reg: ledoit_wolf
+  shrinkage: auto
+protocol:
+  name: loso
+  seed: 0
+  n_held_out: 20
+logger:
+  name: offline
+  root: results/offline_runs
+seed: 0
+adapters: []
+head: null
+raw_dir: data/raw/eegmmi
+
+======================================================================
+  loaded subject S001: 90 trials
+  loaded subject S002: 90 trials
+  loaded subject S003: 90 trials
+  loaded subject S004: 90 trials
+  loaded subject S005: 90 trials
+  loaded subject S006: 90 trials
+  loaded subject S007: 90 trials
+  loaded subject S008: 90 trials
+  loaded subject S009: 90 trials
+  loaded subject S010: 90 trials
+  loaded subject S011: 90 trials
+  loaded subject S012: 90 trials
+  loaded subject S013: 90 trials
+  loaded subject S014: 90 trials
+  loaded subject S015: 90 trials
+  loaded subject S016: 90 trials
+  loaded subject S017: 90 trials
+  loaded subject S018: 90 trials
+  loaded subject S019: 90 trials
+  loaded subject S020: 90 trials
+  loaded subject S021: 90 trials
+  loaded subject S022: 90 trials
+  loaded subject S023: 90 trials
+  loaded subject S024: 90 trials
+  loaded subject S025: 90 trials
+  loaded subject S026: 90 trials
+  loaded subject S027: 90 trials
+  loaded subject S028: 90 trials
+  loaded subject S029: 90 trials
+  loaded subject S030: 90 trials
+  loaded subject S031: 90 trials
+  loaded subject S032: 90 trials
+  loaded subject S033: 90 trials
+  loaded subject S034: 85 trials
+  loaded subject S035: 90 trials
+  loaded subject S036: 90 trials
+  loaded subject S037: 85 trials
+  loaded subject S038: 90 trials
+  loaded subject S039: 90 trials
+  loaded subject S040: 90 trials
+  loaded subject S041: 88 trials
+  loaded subject S042: 90 trials
+  loaded subject S043: 90 trials
+  loaded subject S044: 90 trials
+  loaded subject S045: 90 trials
+  loaded subject S046: 90 trials
+  loaded subject S047: 90 trials
+  loaded subject S048: 90 trials
+  loaded subject S049: 90 trials
+  loaded subject S050: 90 trials
+  loaded subject S051: 90 trials
+  loaded subject S052: 90 trials
+  loaded subject S053: 90 trials
+  loaded subject S054: 90 trials
+  loaded subject S055: 90 trials
+  loaded subject S056: 90 trials
+  loaded subject S057: 90 trials
+  loaded subject S058: 90 trials
+  loaded subject S059: 90 trials
+  loaded subject S060: 90 trials
+  loaded subject S061: 90 trials
+  loaded subject S062: 90 trials
+  loaded subject S063: 90 trials
+  loaded subject S064: 87 trials
+  loaded subject S065: 90 trials
+  loaded subject S066: 90 trials
+  loaded subject S067: 90 trials
+  loaded subject S068: 90 trials
+  loaded subject S069: 90 trials
+  loaded subject S070: 90 trials
+  loaded subject S071: 90 trials
+  loaded subject S072: 85 trials
+  loaded subject S073: 84 trials
+  loaded subject S074: 85 trials
+  loaded subject S075: 90 trials
+  loaded subject S076: 84 trials
+  loaded subject S077: 90 trials
+  loaded subject S078: 90 trials
+  loaded subject S079: 90 trials
+  loaded subject S080: 90 trials
+  loaded subject S081: 90 trials
+  loaded subject S082: 90 trials
+  loaded subject S083: 90 trials
+  loaded subject S084: 90 trials
+  loaded subject S085: 90 trials
+  loaded subject S086: 90 trials
+  loaded subject S087: 90 trials
+  loaded subject S090: 90 trials
+  loaded subject S091: 90 trials
+  loaded subject S093: 90 trials
+  loaded subject S094: 90 trials
+  loaded subject S095: 90 trials
+  loaded subject S096: 90 trials
+  loaded subject S097: 90 trials
+  loaded subject S098: 90 trials
+  loaded subject S099: 90 trials
+  loaded subject S101: 90 trials
+  loaded subject S102: 85 trials
+  loaded subject S103: 90 trials
+  loaded subject S105: 90 trials
+  loaded subject S106: 90 trials
+  loaded subject S107: 90 trials
+  loaded subject S108: 90 trials
+  loaded subject S109: 90 trials
+  protocol=loso → 20 splits
+Computing rank from data with rank=None
+    Using tolerance 0.0091 (2.2e-16 eps * 64 dim * 6.4e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [1/20]                loso-S002  acc=0.267  kappa=+0.041  (17.2s)
+Computing rank from data with rank=None
+    Using tolerance 0.0091 (2.2e-16 eps * 64 dim * 6.4e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [2/20]                loso-S004  acc=0.167  kappa=-0.112  (15.8s)
+Computing rank from data with rank=None
+    Using tolerance 0.0091 (2.2e-16 eps * 64 dim * 6.4e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [3/20]                loso-S007  acc=0.267  kappa=+0.018  (16.8s)
+Computing rank from data with rank=None
+    Using tolerance 0.009 (2.2e-16 eps * 64 dim * 6.3e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [4/20]                loso-S017  acc=0.278  kappa=+0.020  (19.1s)
+Computing rank from data with rank=None
+    Using tolerance 0.0091 (2.2e-16 eps * 64 dim * 6.4e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [5/20]                loso-S024  acc=0.244  kappa=+0.000  (16.6s)
+Computing rank from data with rank=None
+    Using tolerance 0.009 (2.2e-16 eps * 64 dim * 6.3e+11  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+Estimating class=2 covariance using LEDOIT_WOLF
+Done.
+Estimating class=3 covariance using LEDOIT_WOLF
+Done.
+  [6/20]                loso-S028  acc=0.211  kappa=-0.048  (18.7s)
+Computing rank from data with rank=None

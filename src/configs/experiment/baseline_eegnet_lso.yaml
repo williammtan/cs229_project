@@ -1,0 +1,5 @@
+# @package _global_
+# Canonical EEGMMI within-subject metric: leave-one-session-out.
+defaults:
+  - override /backbone: eegnet
+  - override /protocol: leave_one_session_out

@@ -6,7 +6,7 @@ defaults:
   - override /protocol: loso
 head:
   name: linear_probe
-  alpha: 1.0
+  C: 1.0
 backbone:
   n_channels: 16
 dataset:

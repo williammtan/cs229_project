@@ -4,11 +4,9 @@ defaults:
   - override /protocol: loso
 head:
   name: linear_probe
-  alpha: 1.0
+  C: 1.0
 adapters:
   - name: ra_ema
     alpha: 0.1
     regularize: 1.0e-5
     update_online: true
-dataset:
-  per_trial_zscore: false

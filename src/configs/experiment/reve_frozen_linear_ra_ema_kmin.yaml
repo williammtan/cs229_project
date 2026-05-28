@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /backbone: reve_frozen
+  - override /protocol: kmin_calibration
+head:
+  name: linear_probe
+  C: 1.0
+adapters:
+  - name: ra_ema
+    alpha: 0.1
+    regularize: 1.0e-5
+    update_online: true

@@ -1,4 +1,9 @@
 # @package protocol
+# Budget unit is *trials per class* on the EEGMMI classification branch.
+# Each held-out subject is run at every K in the budget list, so 20 subjects ×
+# 6 budgets = 120 splits per K-trials experiment — already a lot. Keep
+# n_held_out tighter here.
 name: kmin_calibration
-k_budgets_min: [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]
+k_budgets_trials: [0, 1, 2, 5, 10, 20]
 seed: 0
+n_held_out: 15

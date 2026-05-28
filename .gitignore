@@ -17,4 +17,6 @@ wheels/
 wandb/
 
 .env
+.envrc.local
+.direnv/
 .DS_Store

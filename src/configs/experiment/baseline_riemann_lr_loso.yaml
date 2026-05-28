@@ -1,4 +1,4 @@
 # @package _global_
 defaults:
-  - override /backbone: bradberry_mlr
+  - override /backbone: riemann_lr
   - override /protocol: loso

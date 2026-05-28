@@ -1,67 +1,73 @@
-"""Unit tests for src.heads.* — fit/predict shape and behaviour contracts."""
+"""Unit tests for src.heads.* — softmax classifier behaviour contracts."""
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
 from src.heads.identity import IdentityHead
-from src.heads.linear_probe import LinearProbeHead
+from src.heads.softmax_probe import SoftmaxProbeHead
 
 
 @pytest.fixture
 def synth_features():
-    """Linear-y mappable features so the head can actually learn something."""
+    """Linearly separable per-class features."""
     rng = np.random.default_rng(0)
-    n, d_in, d_out = 200, 16, 3
-    X = rng.standard_normal((n, d_in)).astype(np.float32)
-    W_true = rng.standard_normal((d_in, d_out)).astype(np.float32)
-    y = X @ W_true + 0.01 * rng.standard_normal((n, d_out)).astype(np.float32)
-    return X, y.astype(np.float32)
+    n_per_class, d, k = 60, 16, 4
+    X = []
+    y = []
+    centers = rng.standard_normal((k, d)).astype(np.float32) * 2.0
+    for ci in range(k):
+        X.append(centers[ci][None, :] + 0.3 * rng.standard_normal((n_per_class, d)).astype(np.float32))
+        y.append(np.full(n_per_class, ci, dtype=np.int64))
+    return np.concatenate(X), np.concatenate(y)
 
 
-class TestLinearProbeHead:
+class TestSoftmaxProbeHead:
     def test_predict_before_fit_raises(self, synth_features):
-        head = LinearProbeHead()
+        head = SoftmaxProbeHead()
         X, _ = synth_features
         with pytest.raises(AssertionError):
             head.predict(X)
 
-    def test_fit_predict_shape(self, synth_features):
-        head = LinearProbeHead()
+    def test_fit_predict_shapes(self, synth_features):
+        head = SoftmaxProbeHead()
         X, y = synth_features
         head.fit(X, y)
-        out = head.predict(X)
-        assert out.shape == y.shape
-        assert out.dtype == np.float32
+        labels = head.predict(X)
+        assert labels.shape == y.shape
+        assert labels.dtype == np.int64
+        proba = head.predict_proba(X)
+        assert proba.shape == (len(X), 4)
+        assert np.allclose(proba.sum(axis=-1), 1.0, atol=1e-5)
 
-    def test_fits_linear_relationship_well(self, synth_features):
-        head = LinearProbeHead(alpha=0.1)
+    def test_high_accuracy_on_separable_clusters(self, synth_features):
+        head = SoftmaxProbeHead(C=1.0)
         X, y = synth_features
         head.fit(X, y)
-        pred = head.predict(X)
-        # Per-axis Pearson r should be near 1.0 on near-noise-free training data.
-        for k in range(3):
-            r = np.corrcoef(pred[:, k], y[:, k])[0, 1]
-            assert r > 0.95, f"axis {k}: r={r:.3f} too low for clean synthetic"
+        labels = head.predict(X)
+        acc = float((labels == y).mean())
+        assert acc > 0.9, f"separable synthetic should be easy; got {acc:.3f}"
 
-    def test_stores_target_normalization(self, synth_features):
-        head = LinearProbeHead()
+    def test_calibrate_refits_on_source_plus_calib(self, synth_features):
+        """Calibration should not discard source classes."""
+        head = SoftmaxProbeHead(calibrate_on_calib=True)
         X, y = synth_features
         head.fit(X, y)
-        assert head._y_mean is not None and head._y_std is not None
-        assert head._y_mean.shape == (3,)
+        # Two-class calib subset (labels 0 and 1 only), drawn from both.
+        idx = np.concatenate([np.where(y == 0)[0][:10], np.where(y == 1)[0][:10]])
+        head.calibrate(X[idx], y[idx])
+        new_labels = head.predict(X)
+        assert set(np.unique(new_labels).tolist()) == {0, 1, 2, 3}
+        assert float((new_labels == y).mean()) > 0.9
 
-    def test_constant_target_does_not_divide_by_zero(self):
-        """Trivial edge case: when target std is exactly 0, the +1e-6 floor
-        in the head must prevent a divide-by-zero in the StandardScaler step."""
-        rng = np.random.default_rng(0)
-        X = rng.standard_normal((50, 8)).astype(np.float32)
-        y = np.ones((50, 3), dtype=np.float32) * 7.5
-        head = LinearProbeHead()
+    def test_calibrate_noop_with_too_few_samples(self, synth_features):
+        head = SoftmaxProbeHead(calibrate_on_calib=True)
+        X, y = synth_features
         head.fit(X, y)
-        pred = head.predict(X)
-        assert np.all(np.isfinite(pred))
-        assert np.allclose(pred, 7.5, atol=1e-3)
+        pred_before = head.predict(X[:10])
+        head.calibrate(X[:1], y[:1])  # too few to refit -> no-op
+        pred_after = head.predict(X[:10])
+        assert np.array_equal(pred_before, pred_after)
 
 
 class TestIdentityHead:

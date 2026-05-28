@@ -24,6 +24,11 @@ dependencies = [
     "torch>=2.11.0",
     "tqdm>=4.67.3",
     "wandb>=0.18.0",
+    # JAX is used by the vendored CLD package (vendor/CLD) for the convex NN
+    # head (ConvexNNHead). CPU-only is fine; ADMM training is dominated by
+    # PCG sweeps over modest D = 200–512 FM embedding dims.
+    "jax>=0.7.0",
+    "jaxlib>=0.7.0",
 ]
 
 [dependency-groups]

@@ -1,0 +1,16 @@
+# @package _global_
+# K-trials sweep with ConvexNN head. The calibrate path refits the convex MLP
+# on K labeled trials per class. Each ADMM refit is a few seconds, so this is
+# practical for K-trials curves in a way that LoRA finetuning isn't.
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: kmin_calibration
+head:
+  name: convex_nn
+  n_classes: 4
+  n_neurons: 64
+  beta: 1.0e-3
+  rho: 0.1
+  admm_iters: 8
+  pcg_iters: 32
+  rank: 20

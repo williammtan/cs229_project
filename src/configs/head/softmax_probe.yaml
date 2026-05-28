@@ -1,0 +1,5 @@
+# @package head
+name: softmax_probe
+C: 1.0
+max_iter: 1000
+calibrate_on_calib: true

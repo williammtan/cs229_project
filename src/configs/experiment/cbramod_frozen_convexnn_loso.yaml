@@ -1,0 +1,16 @@
+# @package _global_
+# YELLOW track: frozen CBraMod embeddings -> convex 2-layer ReLU MLP head
+# (Pilanci-Ergen 2020 via vendor/CLD). The single most distinctive method in
+# docs/plan_clf.md §8 — globally-optimal nonlinear head with no SGD.
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: loso
+head:
+  name: convex_nn
+  n_classes: 4
+  n_neurons: 64
+  beta: 1.0e-3
+  rho: 0.1
+  admm_iters: 8
+  pcg_iters: 32
+  rank: 20

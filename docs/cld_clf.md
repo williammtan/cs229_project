@@ -1,0 +1,1 @@
+Then I want you to clone the jaxcld package from github.com/pilancilab/CLD. I want to implement a variant of this embedding pooling -> cvxnn head prediction. See how we train and run inference on cvxnn in train_cvxnn.py

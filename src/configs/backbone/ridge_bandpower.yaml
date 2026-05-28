@@ -1,7 +1,0 @@
-# @package backbone
-name: ridge_bandpower
-fs: 100
-bands: [[8, 13], [13, 30], [30, 45]]
-win_ms: 500
-hop_ms: 100
-alpha: 10.0

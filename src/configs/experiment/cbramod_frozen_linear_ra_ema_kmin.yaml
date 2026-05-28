@@ -1,0 +1,15 @@
+# @package _global_
+# K-trials sweep with online RA-EMA. EMA tracks per-trial covariance drift on
+# the held-out subject; calibration trials seed M_target via the Frechet mean,
+# every subsequent prediction call also updates M_target.
+defaults:
+  - override /backbone: cbramod_frozen
+  - override /protocol: kmin_calibration
+head:
+  name: linear_probe
+  C: 1.0
+adapters:
+  - name: ra_ema
+    alpha: 0.1
+    regularize: 1.0e-5
+    update_online: true

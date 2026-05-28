@@ -8,7 +8,7 @@
 #   seed:     int.
 
 defaults:
-  - dataset: way_eeg_gal
+  - dataset: eegmmi
   - backbone: eegnet
   - protocol: loso
   - logger: offline
@@ -17,4 +17,4 @@ defaults:
 seed: 0
 adapters: []
 head: null
-raw_dir: data/raw
+raw_dir: data/raw/eegmmi

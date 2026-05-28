@@ -1,0 +1,12 @@
+# @package _global_
+# Sanity check: tangent-space LR is already Riemannian-aware via per-trial
+# covariances, so adding RA on top is partially redundant. Including it as a
+# control — if it doesn't help, that's a useful negative result.
+defaults:
+  - override /backbone: riemann_lr
+  - override /protocol: kmin_calibration
+adapters:
+  - name: ra_static
+    regularize: 1.0e-5
+    target_space: identity
+    zero_shot_fallback: per_trial

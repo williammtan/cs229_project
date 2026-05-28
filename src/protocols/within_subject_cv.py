@@ -5,8 +5,8 @@ from typing import Iterator
 
 from src.core.registry import register
 from src.core.types import Split
+from src.data.eegmmi import SubjectData
 from src.data.splits import WithinSubjectKFold
-from src.data.way_eeg_gal import SubjectData
 from src.protocols.base import ProtocolBase
 
 

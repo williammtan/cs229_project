@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - override /backbone: riemann_lr
+  - override /protocol: leave_one_session_out

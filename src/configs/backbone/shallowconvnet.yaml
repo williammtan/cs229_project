@@ -1,19 +1,17 @@
 # @package backbone
 name: shallowconvnet
-n_channels: 32
-n_out: 3
+n_channels: 64
+n_classes: 4
 n_filters: 40
 temporal_kernel: 25
 pool_size: 75
 pool_stride: 15
 dropout: 0.5
 train:
-  win_samples: 100
-  hop_samples: 20
-  batch_size: 128
+  batch_size: 64
   lr: 1.0e-3
   weight_decay: 1.0e-4
-  epochs: 25
-  patience: 4
+  epochs: 50
+  patience: 8
   val_frac: 0.1
   seed: 0

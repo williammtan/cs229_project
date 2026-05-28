@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - override /backbone: csp_lda
+  - override /protocol: within_subject_cv

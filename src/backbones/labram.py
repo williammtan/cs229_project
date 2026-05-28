@@ -1,8 +1,9 @@
 """LaBraM backbone (frozen feature extractor by default).
 
 Wraps ``braindecode.models.Labram``. LaBraM keys electrode rows to canonical
-10-20 names via ch_names. WAY-EEG-GAL's ActiCap-32 labels (verified) map
-cleanly into LaBraM's canonical channel table.
+10-20 names via ch_names. EEGMMI's 64-channel BCI2000 montage maps cleanly
+into LaBraM's canonical channel table once names are normalized
+(``Fc5.`` -> ``Fc5``, etc.).
 
 Pretrained weights:
     HuggingFace ``braindecode/Labram-Braindecode`` (open).
@@ -15,51 +16,55 @@ import torch
 import torch.nn as nn
 
 from src.backbones.cbramod import _load_hf_state_dict, _load_overlap
-from src.backbones.fm_base import FMBackboneBase
+from src.backbones.fm_base import FMBackboneBase, pool_spatiotemporal_tokens
 from src.core.registry import register
 
 
 @register("backbone", "labram_frozen")
 @register("backbone", "labram_finetune")
 class LabramBackbone(FMBackboneBase):
-    """LaBraM with mean-pooled per-window features."""
+    """LaBraM with configurable per-trial token pooling."""
 
     embed_dim = 200
     PATCH_SIZE = 200
 
     def __init__(
         self,
-        n_channels: int = 32,
-        win_seconds: float = 2.0,
-        hop_seconds: float = 0.2,
+        n_channels: int = 64,
+        trial_seconds: float = 4.0,
         freeze: bool = True,
         batch_size: int = 32,
+        n_classes: int = 4,
         pretrained_id: str | None = "braindecode/Labram-Braindecode",
-        use_cls_token: bool = True,
+        input_scale: float = 1.0e6,
+        feature_pool: str = "channel_mean",
+        use_cls_token: bool = False,
         finetune_train: dict | None = None,
     ):
         self.pretrained_id = pretrained_id
+        self.feature_pool = feature_pool
         self.use_cls_token = use_cls_token
         super().__init__(
             n_channels=n_channels,
             target_fs=200,
-            win_seconds=win_seconds,
-            hop_seconds=hop_seconds,
+            trial_seconds=trial_seconds,
             freeze=freeze,
             batch_size=batch_size,
+            n_classes=n_classes,
+            input_scale=input_scale,
             finetune_train=finetune_train,
         )
 
     def _build_model(self) -> nn.Module:
         from braindecode.models import Labram
 
-        n_times = self.win_samples
+        n_times = self.trial_samples
         if n_times % self.PATCH_SIZE != 0:
             raise ValueError(
-                f"win_seconds * 200 must be a multiple of {self.PATCH_SIZE}; got {n_times}."
+                f"trial_seconds * 200 must be a multiple of {self.PATCH_SIZE}; got {n_times}."
             )
         model = Labram(
-            n_outputs=3,
+            n_outputs=self.n_classes,
             n_chans=self.n_channels,
             n_times=n_times,
             sfreq=self.target_fs,
@@ -82,13 +87,18 @@ class LabramBackbone(FMBackboneBase):
         return model
 
     def _forward_features(self, x: torch.Tensor) -> torch.Tensor:
-        # LaBraM's wrapper normalizes its own input scaling internally per
-        # braindecode's reimplementation (see preprocessor in cls).
         out = self.model(x, ch_names=list(self.channel_names), return_features=True)
-        # features: (B, n_tokens, D); cls_token: (B, D) or None
         if self.use_cls_token and out.get("cls_token") is not None:
             return out["cls_token"]
-        return out["features"].mean(dim=1)
+        feats = out["features"]
+        if self.feature_pool in {"channel_mean", "patch_mean"}:
+            B, N, D = feats.shape
+            if N % self.n_channels != 0:
+                raise ValueError(
+                    f"LaBraM returned {N} tokens, not divisible by n_channels={self.n_channels}"
+                )
+            feats = feats.reshape(B, self.n_channels, N // self.n_channels, D)
+        return pool_spatiotemporal_tokens(feats, self.feature_pool)
 
     def _forward_predict(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x, ch_names=list(self.channel_names))

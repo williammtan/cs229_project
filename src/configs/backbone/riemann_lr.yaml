@@ -1,0 +1,6 @@
+# @package backbone
+name: riemann_lr
+n_classes: 4
+estimator: oas
+C: 1.0
+max_iter: 2000

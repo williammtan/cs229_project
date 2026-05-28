@@ -1,3 +1,9 @@
 # @package protocol
 name: loso
 seed: 0
+# n_held_out: number of subjects to use as held-out folds.
+#   null  -> full N-fold LOSO (e.g. 104 folds on EEGMMI)
+#   20    -> randomly subsample 20 held-out subjects (deterministic via seed),
+#            each still trained on the full N-1 pool. Standard 5x speedup for
+#            EEGMMI without losing the cross-subject claim. Override per-run.
+n_held_out: 20

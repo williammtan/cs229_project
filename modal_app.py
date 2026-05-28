@@ -1,21 +1,25 @@
-"""Run etm benchmarks on Modal (https://modal.com).
+"""Run etm classification benchmarks on Modal (https://modal.com).
 
 The existing scripts are reused unchanged; this file is the only addition.
 
 One-time setup:
-    uv add modal
-    uv run modal token new
+    uv run modal token new --profile etm-clf       # see .envrc; pinned per-repo
     uv run modal secret create wandb WANDB_API_KEY=<key>
     uv run modal secret create huggingface HF_TOKEN=<token>   # for REVE only
 
 Common commands:
-    # populate the data volume (subjects default: 1..12)
+    # populate the data volume (all 104 EEGMMI subjects minus exclusions)
     uv run modal run modal_app.py::download_data
 
-    # full LOSO sweep, FANNED OUT in parallel (one A100 per experiment)
-    uv run modal run --detach modal_app.py::run_benchmarks
+    # full sweep, FANNED OUT in parallel (one A100 per experiment).
+    # Skips the 3 FM-finetune configs (each is 2-5h on its own).
+    uv run modal run --detach modal_app.py::run_benchmarks \\
+        --skip "cbramod_finetune_loso labram_finetune_loso reve_finetune_loso"
 
-    # ... or serially in one container (cheaper, slower)
+    # K-trials calibration sweep (separate research question, same fanout pattern)
+    uv run modal run --detach modal_app.py::run_kmin_sweep
+
+    # ... or one big serial container (cheaper, slower)
     uv run modal run --detach modal_app.py::run_benchmarks_serial
 
     # run only one experiment
@@ -27,6 +31,7 @@ Common commands:
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -36,7 +41,7 @@ import modal
 APP_NAME = "etm-benchmarks"
 REPO = Path(__file__).parent
 REMOTE_REPO = "/root/etm"
-DEFAULT_GPU = "A100"
+DEFAULT_GPU = "L40S"
 MAX_CONCURRENT_GPUS = 10  # Modal account GPU concurrency limit.
 
 # Reuse the experiment list from the existing runner script — single source of truth.
@@ -58,6 +63,9 @@ image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git")
     .pip_install_from_pyproject(str(REPO / "pyproject.toml"))
+    # pyproject pins CPU-only jax/jaxlib so Mac dev installs work. On Modal we
+    # have an A100, so swap in the CUDA 12 jaxlib + plugin to actually use it.
+    .pip_install("jax[cuda12]>=0.7.0")
     .add_local_dir(
         str(REPO),
         remote_path=REMOTE_REPO,
@@ -97,10 +105,19 @@ def _sh(cmd: list[str]) -> None:
     subprocess.run(cmd, cwd=REMOTE_REPO, check=True)
 
 
-@app.function(volumes=VOLUMES, timeout=60 * 60)
-def download_data(subjects: str = "1 2 3 4 5 6 7 8 9 10 11 12") -> None:
-    """Download WAY-EEG-GAL subjects into the persistent data volume."""
-    _sh(["python", "scripts/download_data.py", *subjects.split()])
+@app.function(volumes=VOLUMES, timeout=2 * 60 * 60)
+def download_data(subjects: str = "", jobs: int = 6) -> None:
+    """Download EEGMMI subjects into the persistent data volume.
+
+    Empty ``subjects`` means "all 104 (109 minus exclusions)" — pass space-
+    separated subject IDs to override. Parallelism is at the subject level.
+    """
+    cmd = ["python", "scripts/download_data.py", "-j", str(jobs)]
+    if subjects:
+        cmd += subjects.split()
+    else:
+        cmd += ["--all"]
+    _sh(cmd)
     data_vol.commit()
 
 
@@ -111,8 +128,14 @@ def download_data(subjects: str = "1 2 3 4 5 6 7 8 9 10 11 12") -> None:
     timeout=6 * 60 * 60,
     max_containers=MAX_CONCURRENT_GPUS,
 )
-def run_experiment(name: str, overrides: str = "", logger: str = "wandb") -> str:
-    """Run a single Hydra experiment by name. Returns the experiment name."""
+def run_experiment(name: str, overrides: str = "", logger: str = "wandb", modal_app_id: str = "") -> str:
+    """Run a single Hydra experiment by name. Returns the experiment name.
+
+    ``modal_app_id`` is forwarded by the fanout so each W&B run carries a
+    ``modal-app:<id>`` tag and can be looked up by `scripts/summarize_run.py`.
+    """
+    if modal_app_id:
+        os.environ["MODAL_APP_ID"] = modal_app_id
     cmd = ["python", "-m", "src.runner", f"+experiment={name}", f"logger={logger}"]
     if overrides:
         cmd += overrides.split()
@@ -121,9 +144,27 @@ def run_experiment(name: str, overrides: str = "", logger: str = "wandb") -> str
     return name
 
 
+def _current_app_id() -> str:
+    """Best-effort capture of the running Modal app ID from inside a function.
+
+    For ephemeral `modal run` invocations, the app handle attached at module
+    scope is hydrated once the function starts, so its ``app_id`` is available.
+    Falls back to the env var Modal sets in the container, then to "".
+    """
+    try:
+        aid = getattr(app, "app_id", None)
+        if aid:
+            return aid
+    except Exception:
+        pass
+    return os.environ.get("MODAL_APP_ID", "")
+
+
 def _fanout(label: str, names: list[str], logger: str) -> None:
     """Shared fanout: run_experiment.map across the given experiment names."""
-    print(f"[{label}] launching {len(names)} experiments on {DEFAULT_GPU}:")
+    app_id = _current_app_id()
+    print(f"[{label}] launching {len(names)} experiments on {DEFAULT_GPU}"
+          f" (modal_app_id={app_id or 'unknown'}):")
     for n in names:
         print(f"  - {n}")
 
@@ -131,7 +172,7 @@ def _fanout(label: str, names: list[str], logger: str) -> None:
     failed: list[str] = []
     for result in run_experiment.map(
         names,
-        kwargs={"logger": logger},
+        kwargs={"logger": logger, "modal_app_id": app_id},
         return_exceptions=True,
         order_outputs=False,
     ):

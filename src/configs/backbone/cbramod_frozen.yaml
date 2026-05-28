@@ -1,8 +1,10 @@
 # @package backbone
 name: cbramod_frozen
-n_channels: 32
-win_seconds: 2.0   # 2s window = 2 patches @ 200Hz, mitigates short-trial flaw
-hop_seconds: 0.2
+n_channels: 64
+trial_seconds: 4.0   # full EEGMMI trial = 800 samples @ 200Hz = 4 patches
 freeze: true
 batch_size: 32
+n_classes: 4
 pretrained_id: braindecode/CBraMod-Pretrained
+input_scale: 1.0e6   # MNE returns volts; pretrained CBraMod expects microvolt-scale EEG.
+feature_pool: channel_mean

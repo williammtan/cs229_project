@@ -1,43 +1,38 @@
-"""Datasets and split protocols.
-
-Re-exports keep the historical ``from src.data import Trial, load_subject, ...``
-import path working.
-"""
-from src.data.way_eeg_gal import (
+"""Datasets and split protocols."""
+from src.data.eegmmi import (
+    CLASS_NAMES,
     EEG_BAND,
     EEG_FS,
-    KIN_HAND_POS,
+    EXCLUDED_SUBJECTS,
+    IMAGERY_RUNS,
+    N_CLASSES,
     N_EEG_CHANNELS,
-    PTS_BAND,
+    RUN_LABEL_MAP,
     TARGET_FS,
     SubjectData,
     Trial,
-    concat_trials,
     load_dataset,
     load_subject,
-    preprocess_trial,
-    trial_lengths,
+    stack_eeg_and_labels,
 )
-from src.data.splits import LOSO, WithinSubjectKFold, sample_k_minutes
-from src.data.windows import make_windows, windows_to_per_sample
+from src.data.splits import LOSO, WithinSubjectKFold, sample_k_trials_per_class
 
 __all__ = [
+    "CLASS_NAMES",
     "EEG_BAND",
     "EEG_FS",
-    "KIN_HAND_POS",
+    "EXCLUDED_SUBJECTS",
+    "IMAGERY_RUNS",
+    "LOSO",
+    "N_CLASSES",
     "N_EEG_CHANNELS",
-    "PTS_BAND",
-    "TARGET_FS",
+    "RUN_LABEL_MAP",
     "SubjectData",
+    "TARGET_FS",
     "Trial",
-    "concat_trials",
+    "WithinSubjectKFold",
     "load_dataset",
     "load_subject",
-    "preprocess_trial",
-    "trial_lengths",
-    "LOSO",
-    "WithinSubjectKFold",
-    "sample_k_minutes",
-    "make_windows",
-    "windows_to_per_sample",
+    "sample_k_trials_per_class",
+    "stack_eeg_and_labels",
 ]

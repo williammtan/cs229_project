@@ -1,13 +1,14 @@
-"""Hydra entry point. One loop. Every experiment goes through here.
+"""Hydra entry point for the EEGMMI classification pipeline.
+
+One loop. Every experiment goes through here.
 
   uv run python -m src.runner +experiment=baseline_eegnet_loso
   uv run python -m src.runner -m +experiment=baseline_eegnet_loso seed=0,1,2
-  uv run python -m src.runner +experiment=cbramod_lora_kmin \\
-      protocol.k_budgets_min=[0,1,5] dataset.subjects=[1,2,3]
+  uv run python -m src.runner +experiment=cbramod_frozen_linear_kmin \
+      'protocol.k_budgets_trials=[0,1,5]' 'dataset.subjects=[1,2,3]'
 
-The loop is deliberately tiny: build pipeline + protocol + logger, then for
-each ``Split`` produced by the protocol run ``pipeline.fit → calibrate →
-predict`` and ship metrics to the logger with split-specific tagging.
+For each ``Split`` produced by the protocol we run ``pipeline.fit → calibrate
+→ predict`` and ship metrics to the logger with split-specific tagging.
 """
 from __future__ import annotations
 
@@ -26,10 +27,9 @@ import src.heads  # noqa: F401
 import src.protocols  # noqa: F401
 
 from src.adapters.base import AdapterBase, NoopAdapter
-from src.adapters.composite import AdapterStack
 from src.core.pipeline import Pipeline
 from src.core.registry import build_from_cfg
-from src.data.way_eeg_gal import SubjectData, concat_trials, load_dataset
+from src.data.eegmmi import SubjectData, load_dataset
 from src.eval.metrics import flatten_for_logging, summarize_evaluation
 from src.loggers.base import LoggerBase, derive_run_meta
 from src.loggers.offline import OfflineLogger
@@ -76,14 +76,15 @@ def _build_logger(cfg: dict[str, Any]) -> LoggerBase:
 
 def _load_data(raw_dir: str, dataset_cfg: dict[str, Any]) -> dict[int, SubjectData]:
     name = dataset_cfg["name"]
-    if name != "way_eeg_gal":
+    if name != "eegmmi":
         raise NotImplementedError(f"dataset={name!r} not wired up yet.")
     return load_dataset(
         Path(raw_dir),
         subjects=dataset_cfg["subjects"],
-        series=dataset_cfg["series"],
+        runs=dataset_cfg.get("runs"),
         dst_fs=dataset_cfg.get("target_fs", 100),
-        per_trial_zscore=dataset_cfg.get("per_trial_zscore", True),
+        tmin=float(dataset_cfg.get("tmin", 0.0)),
+        tmax=float(dataset_cfg.get("tmax", 4.0)),
     )
 
 
@@ -101,17 +102,17 @@ def main(cfg: DictConfig) -> None:
 
     data = _load_data(cfg_dict["raw_dir"], cfg_dict["dataset"])
     for sid, sd in data.items():
-        print(f"  loaded subject P{sid}: {len(sd.trials)} trials")
+        print(f"  loaded subject S{sid:03d}: {len(sd.trials)} trials")
+    if not data:
+        print("  no data loaded; exiting.")
+        return
 
     protocol = _build_protocol(cfg_dict["protocol"])
-
     logger = _build_logger(cfg_dict["logger"])
 
-    # Per-group summary aggregation across splits — populates run.summary so
-    # the headline table can be assembled from W&B without re-running anything.
-    per_split_r: list[float] = []
-    per_split_r2: list[float] = []
-    per_split_rmse: list[float] = []
+    n_classes = int(cfg_dict["dataset"].get("n_classes", 4))
+    per_split_acc: list[float] = []
+    per_split_kappa: list[float] = []
 
     splits = list(protocol.iter_splits(data))
     print(f"  protocol={protocol.name} → {len(splits)} splits")
@@ -119,13 +120,10 @@ def main(cfg: DictConfig) -> None:
         print("  no splits produced; nothing to do.")
         return
 
-    # One W&B run per split (so per-fold rows show up cleanly). Group/job-type
-    # are derived per-split; all runs in the same call share the same group.
     for i, split in enumerate(splits):
         run_meta = derive_run_meta(cfg_dict, split.meta)
         logger.init_run(run_meta)
 
-        # Build a fresh pipeline per split so state never leaks.
         backbone = _build_backbone(cfg_dict["backbone"])
         adapters = _build_adapters(cfg_dict.get("adapters"))
         head = _build_head(cfg_dict.get("head"))
@@ -135,44 +133,40 @@ def main(cfg: DictConfig) -> None:
         try:
             pipeline.fit(split.train)
             pipeline.calibrate(split.calib)
-            preds = pipeline.predict_concat(split.eval)
-            _, _, vel_true = concat_trials(split.eval)
-            assert preds.shape == vel_true.shape, f"{preds.shape} != {vel_true.shape}"
-            bundle = summarize_evaluation(vel_true, preds, seed=seed)
+            y_proba = pipeline.predict_concat(split.eval)
+            y_true = np.asarray([t.label for t in split.eval], dtype=np.int64)
+            y_pred = y_proba.argmax(axis=1).astype(np.int64)
+
+            bundle = summarize_evaluation(
+                y_true, y_pred, y_proba=y_proba, n_classes=n_classes, seed=seed,
+            )
             wall = time.time() - t0
 
             flat = flatten_for_logging(bundle)
             flat["wall_sec"] = wall
-            # K-min curves: log k_minutes as a step metric so eval/* plots vs K.
-            if "k_minutes" in split.meta:
-                flat["calib/k_minutes"] = float(split.meta["k_minutes"])
+            if "k_trials_per_class" in split.meta:
+                flat["calib/k_trials_per_class"] = float(split.meta["k_trials_per_class"])
             logger.log_metrics(flat)
-            logger.log_summary({
-                **flat,
-                "split_meta": split.meta,
-            })
+            logger.log_summary({**flat, "split_meta": split.meta})
 
-            r = bundle["metrics"]["pearson_r_mean"]
-            r2 = bundle["metrics"]["r2_mean"]
-            rmse = bundle["metrics"]["rmse_mean"]
-            per_split_r.append(r)
-            per_split_r2.append(r2)
-            per_split_rmse.append(rmse)
+            acc = bundle["metrics"]["accuracy"]
+            kappa = bundle["metrics"]["cohen_kappa"]
+            per_split_acc.append(acc)
+            per_split_kappa.append(kappa)
             print(
                 f"  [{i+1}/{len(splits)}] {run_meta.job_type:>24}  "
-                f"r_mean={r:+.3f}  r2_mean={r2:+.3f}  rmse_mean={rmse:.3f}  ({wall:.1f}s)"
+                f"acc={acc:.3f}  kappa={kappa:+.3f}  ({wall:.1f}s)"
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"  [{i+1}/{len(splits)}] {run_meta.job_type}: FAILED {type(e).__name__}: {e}")
             logger.log_summary({"error": f"{type(e).__name__}: {e}"})
         finally:
             logger.finish()
 
-    if per_split_r:
+    if per_split_acc:
         print()
-        print(f"  aggregate r_mean    = {np.mean(per_split_r):+.3f} ± {np.std(per_split_r):.3f}")
-        print(f"  aggregate r2_mean   = {np.mean(per_split_r2):+.3f} ± {np.std(per_split_r2):.3f}")
-        print(f"  aggregate rmse_mean = {np.mean(per_split_rmse):.3f} ± {np.std(per_split_rmse):.3f}")
+        print(f"  aggregate accuracy = {np.mean(per_split_acc):.3f} ± {np.std(per_split_acc):.3f}")
+        print(f"  aggregate kappa    = {np.mean(per_split_kappa):+.3f} ± {np.std(per_split_kappa):.3f}")
 
 
 if __name__ == "__main__":

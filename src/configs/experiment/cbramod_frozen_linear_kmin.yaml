@@ -4,4 +4,4 @@ defaults:
   - override /protocol: kmin_calibration
 head:
   name: linear_probe
-  alpha: 1.0
+  C: 1.0

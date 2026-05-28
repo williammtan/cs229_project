@@ -1,3 +1,7 @@
 # @package head
+# Backwards-compat alias for softmax_probe — left in place because experiment
+# configs still reference linear_probe by name.
 name: linear_probe
-alpha: 1.0
+C: 1.0
+max_iter: 1000
+calibrate_on_calib: true

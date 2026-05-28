@@ -1,0 +1,6 @@
+# @package backbone
+name: csp_lda
+n_classes: 4
+n_components: 8
+reg: ledoit_wolf
+shrinkage: auto
