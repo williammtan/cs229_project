@@ -1,0 +1,250 @@
+/Users/williamtan/Projects/cs229/etm_clf/.venv/lib/python3.12/site-packages/nbformat/__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+
+===== CELL 2 (1/10) =====
+torch device=mps  neurogpt_device=cpu  mlp_device=cpu  |  repo=/Users/williamtan/Projects/cs229/etm_clf
+----- cell 2 done -----
+
+===== CELL 4 (2/10) =====
+Choosing from all possible events
+dataset=BNCI2014-001  subjects=[1, 2, 3, 4, 5, 6, 7, 8, 9]  P_remap=(22, 22)
+----- cell 4 done -----
+
+===== CELL 6 (3/10) =====
+----- cell 6 done -----
+
+===== CELL 8 (4/10) =====
+----- cell 8 done -----
+
+===== CELL 10 (5/10) =====
+NeuroGPT encoder: loaded 107 tensors (missing=0, unexpected=0)
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S01: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=3.2s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S02: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S03: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S04: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.7s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S05: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S06: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S07: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S08: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.9s
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+Adding metadata with 3 columns
+576 matching events found
+No baseline correction applied
+  S09: 576 trials, feats=(576, 80), class counts=[144, 144, 144, 144], encode=2.8s
+encoded all subjects.
+----- cell 10 done -----
+
+===== CELL 12 (6/10) =====
+eval set = 160 trials/subject; K_MAX=30
+----- cell 12 done -----
+
+===== CELL 14 (7/10) =====
+----- cell 14 done -----
+
+===== CELL 16 (8/10) =====
+  S01 K=  0  linear=0.319  mlp=0.312  convex=0.362
+  S01 K=  1  linear=0.300  mlp=0.319  convex=0.325
+  S01 K=  2  linear=0.269  mlp=0.319  convex=0.325
+  S01 K=  5  linear=0.281  mlp=0.287  convex=0.300
+  S01 K= 10  linear=0.319  mlp=0.338  convex=0.412
+  S01 K= 20  linear=0.338  mlp=0.375  convex=0.438
+  S01 K= 30  linear=0.344  mlp=0.375  convex=0.388
+  S02 K=  0  linear=0.250  mlp=0.269  convex=0.225
+  S02 K=  1  linear=0.237  mlp=0.237  convex=0.225
+  S02 K=  2  linear=0.256  mlp=0.250  convex=0.244
+  S02 K=  5  linear=0.188  mlp=0.256  convex=0.212
+  S02 K= 10  linear=0.175  mlp=0.212  convex=0.219
+  S02 K= 20  linear=0.212  mlp=0.269  convex=0.263
+  S02 K= 30  linear=0.225  mlp=0.294  convex=0.312
+  S03 K=  0  linear=0.369  mlp=0.350  convex=0.375
+  S03 K=  1  linear=0.306  mlp=0.331  convex=0.419
+  S03 K=  2  linear=0.331  mlp=0.338  convex=0.375
+  S03 K=  5  linear=0.362  mlp=0.350  convex=0.406
+  S03 K= 10  linear=0.344  mlp=0.369  convex=0.419
+  S03 K= 20  linear=0.369  mlp=0.425  convex=0.412
+  S03 K= 30  linear=0.344  mlp=0.406  convex=0.494
+  S04 K=  0  linear=0.362  mlp=0.362  convex=0.388
+  S04 K=  1  linear=0.212  mlp=0.331  convex=0.369
+  S04 K=  2  linear=0.237  mlp=0.356  convex=0.369
+  S04 K=  5  linear=0.338  mlp=0.319  convex=0.331
+  S04 K= 10  linear=0.394  mlp=0.331  convex=0.331
+  S04 K= 20  linear=0.419  mlp=0.338  convex=0.388
+  S04 K= 30  linear=0.419  mlp=0.375  convex=0.356
+  S05 K=  0  linear=0.306  mlp=0.250  convex=0.300
+  S05 K=  1  linear=0.250  mlp=0.287  convex=0.300
+  S05 K=  2  linear=0.231  mlp=0.256  convex=0.300
+  S05 K=  5  linear=0.206  mlp=0.263  convex=0.319
+  S05 K= 10  linear=0.237  mlp=0.306  convex=0.331
+  S05 K= 20  linear=0.294  mlp=0.312  convex=0.338
+  S05 K= 30  linear=0.306  mlp=0.312  convex=0.375
+  S06 K=  0  linear=0.325  mlp=0.237  convex=0.244
+  S06 K=  1  linear=0.275  mlp=0.275  convex=0.269
+  S06 K=  2  linear=0.287  mlp=0.269  convex=0.306
+  S06 K=  5  linear=0.300  mlp=0.287  convex=0.319
+  S06 K= 10  linear=0.269  mlp=0.275  convex=0.338
+  S06 K= 20  linear=0.250  mlp=0.263  convex=0.331
+  S06 K= 30  linear=0.256  mlp=0.300  convex=0.294
+  S07 K=  0  linear=0.338  mlp=0.269  convex=0.338
+  S07 K=  1  linear=0.275  mlp=0.306  convex=0.306
+  S07 K=  2  linear=0.263  mlp=0.312  convex=0.319
+  S07 K=  5  linear=0.294  mlp=0.350  convex=0.331
+  S07 K= 10  linear=0.300  mlp=0.287  convex=0.256
+  S07 K= 20  linear=0.312  mlp=0.300  convex=0.312
+  S07 K= 30  linear=0.306  mlp=0.269  convex=0.294
+  S08 K=  0  linear=0.375  mlp=0.369  convex=0.412
+  S08 K=  1  linear=0.331  mlp=0.412  convex=0.425
+  S08 K=  2  linear=0.319  mlp=0.469  convex=0.394
+  S08 K=  5  linear=0.475  mlp=0.456  convex=0.419
+  S08 K= 10  linear=0.506  mlp=0.525  convex=0.556
+  S08 K= 20  linear=0.444  mlp=0.481  convex=0.512
+  S08 K= 30  linear=0.412  mlp=0.481  convex=0.463
+  S09 K=  0  linear=0.444  mlp=0.350  convex=0.369
+  S09 K=  1  linear=0.394  mlp=0.388  convex=0.431
+  S09 K=  2  linear=0.400  mlp=0.425  convex=0.381
+  S09 K=  5  linear=0.419  mlp=0.412  convex=0.406
+  S09 K= 10  linear=0.412  mlp=0.512  convex=0.469
+  S09 K= 20  linear=0.431  mlp=0.512  convex=0.500
+  S09 K= 30  linear=0.419  mlp=0.456  convex=0.481
+
+LOSO (K=0): linear=0.343  mlp=0.308  convex=0.335  (chance=0.250)
+----- cell 16 done -----
+
+===== CELL 18 (9/10) =====
+----- cell 18 done -----
+
+===== CELL 20 (10/10) =====
+wrote: /Users/williamtan/Projects/cs229/etm_clf/results/neurogpt_bnci2014001_kmin_nb
+----- cell 20 done -----
+
+===== EXECUTION COMPLETE =====

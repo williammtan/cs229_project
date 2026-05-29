@@ -1,0 +1,248 @@
+/Users/williamtan/Projects/cs229/etm_clf/.venv/lib/python3.12/site-packages/nbformat/__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+
+===== CELL 2 (1/11) =====
+torch device=mps  mirepnet_device=cpu  |  repo=/Users/williamtan/Projects/cs229/etm_clf
+----- cell 2 done -----
+
+===== CELL 4 (2/11) =====
+104 candidate subjects; template C=45, T=1000 @ 250 Hz, band-pass (8.0, 30.0) Hz, per-subject EA
+----- cell 4 done -----
+
+===== CELL 6 (3/11) =====
+/Users/williamtan/Projects/cs229/etm_clf/.venv/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+----- cell 6 done -----
+
+===== CELL 8 (4/11) =====
+----- cell 8 done -----
+
+===== CELL 10 (5/11) =====
+held-out subjects: [2, 5, 8, 27, 32, 51, 63, 83]
+source pool (96 subjects)
+MIRepNet: loaded 108/143 pretrained tensors (missing=['clshead.weight', 'clshead.bias'])  # missing = the 4-class clshead we never use
+----- cell 10 done -----
+
+===== CELL 11 (6/11) =====
+  S001:  90 trials, feats=(90, 256), encode=2.3s
+  S003:  90 trials, feats=(90, 256), encode=1.3s
+  S004:  90 trials, feats=(90, 256), encode=1.3s
+  S006:  90 trials, feats=(90, 256), encode=1.3s
+  S007:  90 trials, feats=(90, 256), encode=1.3s
+  S009:  90 trials, feats=(90, 256), encode=1.4s
+  S010:  90 trials, feats=(90, 256), encode=1.3s
+  S011:  90 trials, feats=(90, 256), encode=1.2s
+  S012:  90 trials, feats=(90, 256), encode=1.0s
+  S013:  90 trials, feats=(90, 256), encode=1.1s
+  S014:  90 trials, feats=(90, 256), encode=1.5s
+  S015:  90 trials, feats=(90, 256), encode=1.3s
+  S016:  90 trials, feats=(90, 256), encode=1.2s
+  S017:  90 trials, feats=(90, 256), encode=1.3s
+  S018:  90 trials, feats=(90, 256), encode=1.2s
+  S019:  90 trials, feats=(90, 256), encode=1.2s
+  S020:  90 trials, feats=(90, 256), encode=1.3s
+  S021:  90 trials, feats=(90, 256), encode=1.3s
+  S022:  90 trials, feats=(90, 256), encode=0.9s
+  S023:  90 trials, feats=(90, 256), encode=1.0s
+  S024:  90 trials, feats=(90, 256), encode=1.2s
+  S025:  90 trials, feats=(90, 256), encode=1.4s
+  S026:  90 trials, feats=(90, 256), encode=1.3s
+  S028:  90 trials, feats=(90, 256), encode=1.2s
+  S029:  90 trials, feats=(90, 256), encode=1.2s
+  S030:  90 trials, feats=(90, 256), encode=1.2s
+  S031:  90 trials, feats=(90, 256), encode=1.4s
+  S033:  90 trials, feats=(90, 256), encode=1.4s
+  S034:  90 trials, feats=(90, 256), encode=1.0s
+  S035:  90 trials, feats=(90, 256), encode=1.5s
+  S036:  90 trials, feats=(90, 256), encode=1.2s
+  S037:  90 trials, feats=(90, 256), encode=1.2s
+  S038:  90 trials, feats=(90, 256), encode=1.1s
+  S039:  90 trials, feats=(90, 256), encode=1.2s
+  S040:  90 trials, feats=(90, 256), encode=1.1s
+  S041:  90 trials, feats=(90, 256), encode=1.1s
+  S042:  90 trials, feats=(90, 256), encode=1.2s
+  S043:  90 trials, feats=(90, 256), encode=1.2s
+  S044:  90 trials, feats=(90, 256), encode=1.4s
+  S045:  90 trials, feats=(90, 256), encode=2.3s
+  S046:  90 trials, feats=(90, 256), encode=1.7s
+  S047:  90 trials, feats=(90, 256), encode=1.3s
+  S048:  90 trials, feats=(90, 256), encode=1.2s
+  S049:  90 trials, feats=(90, 256), encode=1.2s
+  S050:  90 trials, feats=(90, 256), encode=1.3s
+  S052:  90 trials, feats=(90, 256), encode=1.4s
+  S053:  90 trials, feats=(90, 256), encode=1.2s
+  S054:  90 trials, feats=(90, 256), encode=1.2s
+  S055:  90 trials, feats=(90, 256), encode=1.2s
+  S056:  90 trials, feats=(90, 256), encode=1.2s
+  S057:  90 trials, feats=(90, 256), encode=1.2s
+  S058:  90 trials, feats=(90, 256), encode=1.0s
+  S059:  90 trials, feats=(90, 256), encode=1.1s
+  S060:  90 trials, feats=(90, 256), encode=1.7s
+  S061:  90 trials, feats=(90, 256), encode=1.2s
+  S062:  90 trials, feats=(90, 256), encode=1.2s
+  S064:  90 trials, feats=(90, 256), encode=1.1s
+  S065:  90 trials, feats=(90, 256), encode=1.2s
+  S066:  90 trials, feats=(90, 256), encode=1.2s
+  S067:  90 trials, feats=(90, 256), encode=1.1s
+  S068:  90 trials, feats=(90, 256), encode=1.0s
+  S069:  90 trials, feats=(90, 256), encode=0.8s
+  S070:  90 trials, feats=(90, 256), encode=0.9s
+  S071:  90 trials, feats=(90, 256), encode=1.0s
+  S072:  90 trials, feats=(90, 256), encode=1.5s
+  S073:  90 trials, feats=(90, 256), encode=1.3s
+  S074:  90 trials, feats=(90, 256), encode=1.2s
+  S075:  90 trials, feats=(90, 256), encode=1.2s
+  S076:  90 trials, feats=(90, 256), encode=1.1s
+  S077:  90 trials, feats=(90, 256), encode=1.1s
+  S078:  90 trials, feats=(90, 256), encode=1.2s
+  S079:  90 trials, feats=(90, 256), encode=1.1s
+  S080:  90 trials, feats=(90, 256), encode=0.9s
+  S081:  90 trials, feats=(90, 256), encode=0.9s
+  S082:  90 trials, feats=(90, 256), encode=1.7s
+  S084:  90 trials, feats=(90, 256), encode=1.2s
+  S085:  90 trials, feats=(90, 256), encode=1.2s
+  S086:  90 trials, feats=(90, 256), encode=1.1s
+  S087:  90 trials, feats=(90, 256), encode=1.1s
+  S090:  90 trials, feats=(90, 256), encode=1.2s
+  S091:  90 trials, feats=(90, 256), encode=1.2s
+  S093:  90 trials, feats=(90, 256), encode=1.2s
+  S094:  90 trials, feats=(90, 256), encode=1.3s
+  S095:  90 trials, feats=(90, 256), encode=1.8s
+  S096:  90 trials, feats=(90, 256), encode=1.7s
+  S097:  90 trials, feats=(90, 256), encode=1.7s
+  S098:  90 trials, feats=(90, 256), encode=1.7s
+  S099:  90 trials, feats=(90, 256), encode=1.2s
+  S101:  90 trials, feats=(90, 256), encode=1.2s
+  S102:  90 trials, feats=(90, 256), encode=1.2s
+  S103:  90 trials, feats=(90, 256), encode=1.1s
+  S105:  90 trials, feats=(90, 256), encode=1.2s
+  S106:  90 trials, feats=(90, 256), encode=1.2s
+  S107:  90 trials, feats=(90, 256), encode=1.1s
+  S108:  90 trials, feats=(90, 256), encode=1.2s
+  S109:  90 trials, feats=(90, 256), encode=1.1s
+  S002:  90 trials, feats=(90, 256), encode=0.9s
+  S005:  90 trials, feats=(90, 256), encode=1.1s
+  S008:  90 trials, feats=(90, 256), encode=1.2s
+  S027:  90 trials, feats=(90, 256), encode=1.3s
+  S032:  90 trials, feats=(90, 256), encode=1.2s
+  S051:  90 trials, feats=(90, 256), encode=1.3s
+  S063:  90 trials, feats=(90, 256), encode=1.2s
+  S083:  90 trials, feats=(90, 256), encode=1.2s
+source pool features: X=(8640, 256)  y=(8640,)  class counts=[2182 2138 2163 2157]
+----- cell 11 done -----
+
+===== CELL 13 (7/11) =====
+  S002: eval=44 trials  calib pool/class=[12, 11, 13, 10]
+  S005: eval=44 trials  calib pool/class=[10, 13, 12, 11]
+  S008: eval=44 trials  calib pool/class=[11, 12, 12, 11]
+  S027: eval=44 trials  calib pool/class=[12, 11, 11, 12]
+  S032: eval=44 trials  calib pool/class=[10, 13, 11, 12]
+  S051: eval=44 trials  calib pool/class=[13, 10, 10, 13]
+  S063: eval=44 trials  calib pool/class=[11, 12, 11, 12]
+  S083: eval=44 trials  calib pool/class=[11, 12, 11, 12]
+----- cell 13 done -----
+
+===== CELL 15 (8/11) =====
+Linear probe: fitting source logistic regression on frozen MIRepNet features...
+  source probe fit: 1.5s
+  LinProbe S002 K=  0 n_eval= 44 acc=0.750 [src(K=0)]
+  LinProbe S002 K=  1 n_eval= 44 acc=0.705 [anchored,m=0.35]
+  LinProbe S002 K=  2 n_eval= 44 acc=0.750 [anchored,m=0.35]
+  LinProbe S002 K=  5 n_eval= 44 acc=0.750 [anchored,m=0.35]
+  LinProbe S002 K= 10 n_eval= 44 acc=0.750 [anchored,m=0.35]
+  LinProbe S005 K=  0 n_eval= 44 acc=0.432 [src(K=0)]
+  LinProbe S005 K=  1 n_eval= 44 acc=0.591 [anchored,m=0.35]
+  LinProbe S005 K=  2 n_eval= 44 acc=0.568 [anchored,m=0.35]
+  LinProbe S005 K=  5 n_eval= 44 acc=0.568 [anchored,m=0.35]
+  LinProbe S005 K= 10 n_eval= 44 acc=0.477 [anchored,m=0.35]
+  LinProbe S008 K=  0 n_eval= 44 acc=0.750 [src(K=0)]
+  LinProbe S008 K=  1 n_eval= 44 acc=0.659 [anchored,m=0.35]
+  LinProbe S008 K=  2 n_eval= 44 acc=0.727 [anchored,m=0.35]
+  LinProbe S008 K=  5 n_eval= 44 acc=0.818 [anchored,m=0.35]
+  LinProbe S008 K= 10 n_eval= 44 acc=0.773 [anchored,m=0.35]
+  LinProbe S027 K=  0 n_eval= 44 acc=0.591 [src(K=0)]
+  LinProbe S027 K=  1 n_eval= 44 acc=0.545 [anchored,m=0.35]
+  LinProbe S027 K=  2 n_eval= 44 acc=0.523 [anchored,m=0.35]
+  LinProbe S027 K=  5 n_eval= 44 acc=0.500 [anchored,m=0.35]
+  LinProbe S027 K= 10 n_eval= 44 acc=0.545 [anchored,m=0.35]
+  LinProbe S032 K=  0 n_eval= 44 acc=0.682 [src(K=0)]
+  LinProbe S032 K=  1 n_eval= 44 acc=0.682 [anchored,m=0.35]
+  LinProbe S032 K=  2 n_eval= 44 acc=0.705 [anchored,m=0.35]
+  LinProbe S032 K=  5 n_eval= 44 acc=0.636 [anchored,m=0.35]
+  LinProbe S032 K= 10 n_eval= 44 acc=0.659 [anchored,m=0.35]
+  LinProbe S051 K=  0 n_eval= 44 acc=0.591 [src(K=0)]
+  LinProbe S051 K=  1 n_eval= 44 acc=0.432 [anchored,m=0.35]
+  LinProbe S051 K=  2 n_eval= 44 acc=0.409 [anchored,m=0.35]
+  LinProbe S051 K=  5 n_eval= 44 acc=0.545 [anchored,m=0.35]
+  LinProbe S051 K= 10 n_eval= 44 acc=0.545 [anchored,m=0.35]
+  LinProbe S063 K=  0 n_eval= 44 acc=0.591 [src(K=0)]
+  LinProbe S063 K=  1 n_eval= 44 acc=0.568 [anchored,m=0.35]
+  LinProbe S063 K=  2 n_eval= 44 acc=0.614 [anchored,m=0.35]
+  LinProbe S063 K=  5 n_eval= 44 acc=0.659 [anchored,m=0.35]
+  LinProbe S063 K= 10 n_eval= 44 acc=0.636 [anchored,m=0.35]
+  LinProbe S083 K=  0 n_eval= 44 acc=0.614 [src(K=0)]
+  LinProbe S083 K=  1 n_eval= 44 acc=0.523 [anchored,m=0.35]
+  LinProbe S083 K=  2 n_eval= 44 acc=0.523 [anchored,m=0.35]
+  LinProbe S083 K=  5 n_eval= 44 acc=0.568 [anchored,m=0.35]
+  LinProbe S083 K= 10 n_eval= 44 acc=0.682 [anchored,m=0.35]
+
+  Linear-probe K=0 (LOSO) mean acc: 0.625
+----- cell 15 done -----
+
+===== CELL 17 (9/11) =====
+Convex head - Stage 1: fitting source convex NN on the full source pool...
+  stage-1 solve: 8.8s
+  Convex S002  K=  0  n_eval= 44  acc=0.750  [src(K=0), 0.0s]
+  Convex S002  K=  1  n_eval= 44  acc=0.750  [anchored,r=1163, 3.6s]
+  Convex S002  K=  2  n_eval= 44  acc=0.750  [anchored,r=582, 4.3s]
+  Convex S002  K=  5  n_eval= 44  acc=0.750  [anchored,r=233, 4.4s]
+  Convex S002  K= 10  n_eval= 44  acc=0.773  [anchored,r=116, 4.3s]
+  Convex S005  K=  0  n_eval= 44  acc=0.545  [src(K=0), 0.0s]
+  Convex S005  K=  1  n_eval= 44  acc=0.477  [anchored,r=1163, 1.5s]
+  Convex S005  K=  2  n_eval= 44  acc=0.477  [anchored,r=582, 1.3s]
+  Convex S005  K=  5  n_eval= 44  acc=0.523  [anchored,r=233, 1.2s]
+  Convex S005  K= 10  n_eval= 44  acc=0.523  [anchored,r=116, 1.3s]
+  Convex S008  K=  0  n_eval= 44  acc=0.795  [src(K=0), 0.0s]
+  Convex S008  K=  1  n_eval= 44  acc=0.795  [anchored,r=1163, 1.3s]
+  Convex S008  K=  2  n_eval= 44  acc=0.773  [anchored,r=582, 1.3s]
+  Convex S008  K=  5  n_eval= 44  acc=0.795  [anchored,r=233, 1.3s]
+  Convex S008  K= 10  n_eval= 44  acc=0.818  [anchored,r=116, 1.2s]
+  Convex S027  K=  0  n_eval= 44  acc=0.591  [src(K=0), 0.0s]
+  Convex S027  K=  1  n_eval= 44  acc=0.545  [anchored,r=1163, 1.4s]
+  Convex S027  K=  2  n_eval= 44  acc=0.545  [anchored,r=582, 1.4s]
+  Convex S027  K=  5  n_eval= 44  acc=0.523  [anchored,r=233, 1.4s]
+  Convex S027  K= 10  n_eval= 44  acc=0.523  [anchored,r=116, 1.4s]
+  Convex S032  K=  0  n_eval= 44  acc=0.682  [src(K=0), 0.0s]
+  Convex S032  K=  1  n_eval= 44  acc=0.682  [anchored,r=1163, 1.5s]
+  Convex S032  K=  2  n_eval= 44  acc=0.636  [anchored,r=582, 1.7s]
+  Convex S032  K=  5  n_eval= 44  acc=0.659  [anchored,r=233, 1.6s]
+  Convex S032  K= 10  n_eval= 44  acc=0.750  [anchored,r=116, 1.6s]
+  Convex S051  K=  0  n_eval= 44  acc=0.591  [src(K=0), 0.0s]
+  Convex S051  K=  1  n_eval= 44  acc=0.523  [anchored,r=1163, 1.6s]
+  Convex S051  K=  2  n_eval= 44  acc=0.523  [anchored,r=582, 1.5s]
+  Convex S051  K=  5  n_eval= 44  acc=0.591  [anchored,r=233, 1.3s]
+  Convex S051  K= 10  n_eval= 44  acc=0.545  [anchored,r=116, 1.3s]
+  Convex S063  K=  0  n_eval= 44  acc=0.545  [src(K=0), 0.0s]
+  Convex S063  K=  1  n_eval= 44  acc=0.523  [anchored,r=1163, 1.3s]
+  Convex S063  K=  2  n_eval= 44  acc=0.523  [anchored,r=582, 1.2s]
+  Convex S063  K=  5  n_eval= 44  acc=0.591  [anchored,r=233, 1.2s]
+  Convex S063  K= 10  n_eval= 44  acc=0.545  [anchored,r=116, 1.3s]
+  Convex S083  K=  0  n_eval= 44  acc=0.682  [src(K=0), 0.0s]
+  Convex S083  K=  1  n_eval= 44  acc=0.636  [anchored,r=1163, 1.2s]
+  Convex S083  K=  2  n_eval= 44  acc=0.682  [anchored,r=582, 1.3s]
+  Convex S083  K=  5  n_eval= 44  acc=0.682  [anchored,r=233, 1.4s]
+  Convex S083  K= 10  n_eval= 44  acc=0.636  [anchored,r=116, 1.4s]
+
+  Convex K=0 (LOSO) mean acc: 0.648
+----- cell 17 done -----
+
+===== CELL 19 (10/11) =====
+/tmp/claude-501/ipykernel_81720/468975299.py:16: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  fig.show()
+----- cell 19 done -----
+
+===== CELL 21 (11/11) =====
+wrote: /Users/williamtan/Projects/cs229/etm_clf/results/mirepnet_kmin_nb
+----- cell 21 done -----
+
+===== EXECUTION COMPLETE =====
